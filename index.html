@@ -6,497 +6,336 @@
 <title>반반한 설계자 — 투표</title>
 <style>
 :root {
-  --navy:       #07102A;
-  --navy-mid:   #111E40;
-  --navy-card:  #162050;
-  --navy-hover: #1C2D66;
-  --gold:       #C8960C;
-  --gold-lt:    #F0B429;
-  --gold-pale:  rgba(200,150,12,0.12);
-  --gold-bdr:   rgba(200,150,12,0.35);
-  --white:      #FFFFFF;
-  --g100:       #EEF1FA;
-  --g300:       #8896BB;
-  --g500:       #4A5680;
-  --teal:       #0E9070;
-  --teal-bg:    rgba(14,144,112,0.15);
-  --teal-bdr:   rgba(14,144,112,0.4);
-  --red:        #D93025;
-  --red-bg:     rgba(217,48,37,0.12);
-  --r-sm:       8px;
-  --r-md:       12px;
-  --r-lg:       16px;
-  --r-xl:       20px;
+  --navy:     #07102A;
+  --navy-mid: #111E40;
+  --navy-card:#162050;
+  --gold:     #C8960C;
+  --gold-lt:  #F0B429;
+  --gold-pale:rgba(200,150,12,0.12);
+  --gold-bdr: rgba(200,150,12,0.35);
+  --white:    #FFFFFF;
+  --g200:     #C8D0E8;
+  --g300:     #8896BB;
+  --g500:     #4A5680;
+  --teal:     #0E9070;
+  --teal-bg:  rgba(14,144,112,0.15);
+  --teal-bdr: rgba(14,144,112,0.4);
+  --red:      #D93025;
+  --red-bg:   rgba(217,48,37,0.12);
+  --red-bdr:  rgba(217,48,37,0.4);
+  --green:    #22c55e;
+  --green-bg: rgba(34,197,94,0.12);
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;background:var(--navy);color:var(--white);min-height:100vh;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(30,60,140,0.5) 0%,transparent 70%),
+  radial-gradient(ellipse 40% 60% at 90% 80%,rgba(200,150,12,0.07) 0%,transparent 60%);}
 
-body {
-  font-family: 'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;
-  background: var(--navy);
-  color: var(--white);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
+.wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:0 0 80px;}
 
-/* ── STARS BG ── */
-body::before {
-  content:'';
-  position:fixed; inset:0; pointer-events:none; z-index:0;
-  background:
-    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(30,60,140,0.5) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 60% at 90% 80%, rgba(200,150,12,0.07) 0%, transparent 60%);
-}
+/* HEADER */
+.hdr{text-align:center;padding:28px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.07);position:relative;}
+.hdr-eye{font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;}
+.hdr-title{font-size:24px;font-weight:700;letter-spacing:-.02em;}
+.hdr-title em{color:var(--gold-lt);font-style:normal;}
+.hdr-sub{font-size:12px;color:var(--g300);margin-top:5px;}
+.admin-btn{position:absolute;top:20px;right:16px;font-size:10px;color:var(--g300);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 12px;cursor:pointer;transition:all .12s;}
+.admin-btn:hover{color:var(--gold-lt);border-color:var(--gold-bdr);}
+.admin-btn.on{color:var(--gold-lt);border-color:var(--gold-bdr);background:var(--gold-pale);}
 
-.wrap { position:relative; z-index:1; max-width:640px; margin:0 auto; padding:0 0 60px; }
+/* WEEK BANNER */
+.wbanner{margin:14px 16px 0;background:var(--navy-mid);border:1px solid var(--gold-bdr);border-radius:var(--r-md);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.wb-week{font-size:15px;font-weight:700;color:var(--gold-lt);}
+.wb-range{font-size:11px;color:var(--g300);margin-top:2px;}
+.wb-badge{font-size:10px;font-weight:700;letter-spacing:.06em;padding:4px 12px;border-radius:20px;white-space:nowrap;background:var(--gold-pale);color:var(--gold-lt);border:1px solid var(--gold-bdr);}
+.wb-badge.sp{background:rgba(217,48,37,.15);color:#FF8A80;border-color:var(--red-bdr);}
 
-/* ── HEADER ── */
-.hdr {
-  text-align:center;
-  padding:32px 20px 20px;
-  border-bottom:1px solid rgba(255,255,255,0.07);
-  position:relative;
-}
-.hdr-eyebrow {
-  font-size:10px; letter-spacing:.2em; color:var(--gold);
-  text-transform:uppercase; margin-bottom:8px;
-}
-.hdr-title { font-size:24px; font-weight:700; letter-spacing:-.02em; }
-.hdr-title em { color:var(--gold-lt); font-style:normal; }
-.hdr-sub { font-size:12px; color:var(--g300); margin-top:5px; }
+/* SPECIAL NOTICE */
+.sp-notice{margin:10px 16px 0;background:rgba(217,48,37,.1);border:1px solid var(--red-bdr);border-radius:var(--r-md);padding:10px 14px;font-size:12px;color:#FF9088;line-height:1.6;display:none;}
+.sp-notice strong{color:#FFB3AD;}
 
-/* ── WEEK BANNER ── */
-.week-banner {
-  margin:14px 16px 0;
-  background:var(--navy-mid);
-  border:1px solid var(--gold-bdr);
-  border-radius:var(--r-md);
-  padding:11px 16px;
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
-}
-.wb-left { }
-.wb-week { font-size:15px; font-weight:700; color:var(--gold-lt); }
-.wb-range { font-size:11px; color:var(--g300); margin-top:2px; }
-.wb-badge {
-  font-size:10px; font-weight:700; letter-spacing:.06em;
-  padding:4px 12px; border-radius:20px; white-space:nowrap;
-  background:var(--gold-pale); color:var(--gold-lt); border:1px solid var(--gold-bdr);
-}
-.wb-badge.special {
-  background:rgba(217,48,37,0.15); color:#FF7B6E; border-color:rgba(217,48,37,0.4);
-}
+/* CAT TABS */
+.rtabs{display:flex;gap:8px;padding:14px 16px 0;}
+.rtab{flex:1;padding:11px 6px;border-radius:var(--r-md);border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--g300);font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .14s;line-height:1.4;}
+.rtab .rnum{font-size:9px;display:block;opacity:.7;margin-bottom:2px;letter-spacing:.06em;}
+.rtab.on{background:var(--gold-pale);border-color:var(--gold-bdr);color:var(--gold-lt);}
 
-/* ── SPECIAL NOTICE ── */
-.special-notice {
-  margin:10px 16px 0;
-  background:rgba(217,48,37,0.1);
-  border:1px solid rgba(217,48,37,0.35);
-  border-radius:var(--r-md); padding:10px 14px;
-  font-size:12px; color:#FF9088; line-height:1.6;
-  display:none;
-}
-.special-notice strong { color:#FFB3AD; }
+/* VIEW PILLS */
+.vpills{display:flex;gap:6px;padding:10px 16px 0;}
+.vpill{flex:1;padding:7px 4px;font-size:11px;font-weight:500;border:1px solid rgba(255,255,255,.08);background:transparent;color:var(--g300);border-radius:20px;cursor:pointer;text-align:center;transition:all .12s;}
+.vpill.on{background:var(--navy-mid);color:var(--white);border-color:rgba(255,255,255,.22);}
 
-/* ── ROUND TABS ── */
-.rtabs { display:flex; gap:8px; padding:14px 16px 0; }
-.rtab {
-  flex:1; padding:11px 6px; border-radius:var(--r-md);
-  border:1px solid rgba(255,255,255,0.1);
-  background:rgba(255,255,255,0.03);
-  color:var(--g300); font-size:12px; font-weight:600;
-  cursor:pointer; text-align:center; transition:all .14s;
-  line-height:1.4;
-}
-.rtab .rnum { font-size:9px; display:block; opacity:.7; margin-bottom:2px; letter-spacing:.06em; }
-.rtab.on { background:var(--gold-pale); border-color:var(--gold-bdr); color:var(--gold-lt); }
+/* PANELS */
+.panel{padding:14px 16px;display:none;}
+.panel.on{display:block;}
 
-/* ── VIEW PILLS ── */
-.vpills { display:flex; gap:6px; padding:10px 16px 0; }
-.vpill {
-  flex:1; padding:7px 4px; font-size:11px; font-weight:500;
-  border:1px solid rgba(255,255,255,0.08);
-  background:transparent; color:var(--g300);
-  border-radius:20px; cursor:pointer; text-align:center; transition:all .12s;
-}
-.vpill.on { background:var(--navy-mid); color:var(--white); border-color:rgba(255,255,255,0.22); }
+/* WHO AM I */
+.who-box{background:var(--navy-mid);border:1px solid var(--gold-bdr);border-radius:var(--r-lg);padding:18px;margin-bottom:14px;}
+.who-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:5px;}
+.who-desc{font-size:12px;color:var(--g300);margin-bottom:14px;line-height:1.6;}
+.who-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;}
+.who-btn{padding:9px 10px;border-radius:var(--r-sm);border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--g300);font-size:12px;cursor:pointer;text-align:left;transition:all .12s;line-height:1.4;}
+.who-btn:hover{border-color:var(--gold-bdr);color:var(--gold-lt);}
+.who-btn.on{background:var(--gold-pale);border-color:var(--gold);color:var(--gold-lt);font-weight:600;}
+.who-name{font-weight:600;display:block;}
+.who-nick{font-size:10px;opacity:.7;}
 
-/* ── PANELS ── */
-.panel { padding:14px 16px; display:none; }
-.panel.on { display:block; }
+/* RULE */
+.rule{background:var(--navy-mid);border:1px solid rgba(200,150,12,.2);border-radius:var(--r-md);padding:11px 14px;font-size:12px;color:var(--g300);line-height:1.7;margin-bottom:12px;}
+.rule strong{color:var(--gold-lt);}
+.rule .ok{color:#4ade80;display:block;font-weight:600;margin-top:3px;}
 
-/* ── RULE BOX ── */
-.rule {
-  background:var(--navy-mid); border:1px solid rgba(200,150,12,0.2);
-  border-radius:var(--r-md); padding:11px 14px;
-  font-size:12px; color:var(--g300); line-height:1.7; margin-bottom:12px;
-}
-.rule strong { color:var(--gold-lt); }
-.rule .ok { color:#4ade80; display:block; font-weight:600; margin-top:3px; }
+/* ROUND SEL */
+.round-sel{display:flex;gap:6px;margin-bottom:12px;}
+.rselbtn{flex:1;padding:9px;border-radius:var(--r-sm);border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:var(--g300);font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .12s;}
+.rselbtn.on{background:var(--red-bg);border-color:var(--red-bdr);color:#FF9088;}
+.rselbtn.done{border-color:var(--teal-bdr);color:#4adebc;background:var(--teal-bg);cursor:default;}
 
-/* ── TEAM SETUP ── */
-.setup-box {
-  background:var(--navy-mid); border:1px solid var(--gold-bdr);
-  border-radius:var(--r-lg); padding:16px; margin-bottom:12px;
-}
-.setup-title { font-size:14px; font-weight:600; color:var(--white); margin-bottom:5px; }
-.setup-desc { font-size:12px; color:var(--g300); margin-bottom:12px; line-height:1.6; }
-.team-pills { display:flex; flex-wrap:wrap; gap:6px; }
-.tpill {
-  padding:6px 16px; border-radius:20px;
-  border:1px solid rgba(255,255,255,0.14);
-  background:transparent; color:var(--g300);
-  font-size:12px; cursor:pointer; transition:all .12s;
-}
-.tpill:hover { border-color:var(--gold); color:var(--gold-lt); }
-.tpill.on { background:var(--gold); border-color:var(--gold); color:var(--navy); font-weight:700; }
+/* SECTION LABEL */
+.slbl{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--g500);text-transform:uppercase;margin-bottom:8px;}
 
-/* ── TEAM CARDS ── */
-.slbl {
-  font-size:10px; font-weight:700; letter-spacing:.12em;
-  color:var(--g500); text-transform:uppercase; margin-bottom:8px;
-}
-.tgrid { display:flex; flex-direction:column; gap:10px; margin-bottom:12px; }
-.tcard {
-  background:var(--navy-mid); border:1px solid rgba(255,255,255,0.07);
-  border-radius:var(--r-md); overflow:hidden;
-}
-.thead {
-  padding:7px 14px; font-size:9px; font-weight:700;
-  letter-spacing:.12em; text-transform:uppercase;
-  color:var(--g500); background:rgba(255,255,255,0.03);
-  border-bottom:1px solid rgba(255,255,255,0.05);
-}
-.mrow {
-  display:flex; align-items:center; gap:10px;
-  padding:9px 14px; cursor:pointer;
-  border-bottom:1px solid rgba(255,255,255,0.04);
-  transition:background .1s; position:relative;
-}
-.mrow:last-child { border-bottom:none; }
-.mrow:hover:not(.dis) { background:rgba(255,255,255,0.04); }
-.mrow.dis { opacity:.3; cursor:not-allowed; }
-.mrow.sel-s { background:rgba(200,150,12,0.15); }
-.mrow.sel-o { background:rgba(14,144,112,0.18); }
+/* TEAM CARDS */
+.tgrid{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+.tcard{background:var(--navy-mid);border:1px solid rgba(255,255,255,.07);border-radius:var(--r-md);overflow:hidden;}
+.thead{padding:7px 14px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--g500);background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
 
-.av {
-  width:32px; height:32px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:700; flex-shrink:0; letter-spacing:0;
-}
-.av-b { background:#14285C; color:#7EB3FF; }
-.av-t { background:#0A2E28; color:#3DD9BD; }
-.av-g { background:#1A2E00; color:#9DE84E; }
-.av-p { background:#24125A; color:#B8A0FF; }
-.av-r { background:#3C1010; color:#FF9A8A; }
+/* MEMBER ROW */
+.mrow{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .1s;}
+.mrow:last-child{border-bottom:none;}
+.mrow:hover:not(.dis){background:rgba(255,255,255,.04);}
+.mrow.dis{opacity:.3;cursor:not-allowed;}
+.mrow.sel-s{background:rgba(200,150,12,.15);}
+.mrow.sel-o{background:rgba(14,144,112,.18);}
+.mrow.sel-f{background:rgba(200,150,12,.15);}
+.mrow.is-me{opacity:.25;cursor:not-allowed;}
 
-.minfo { flex:1; min-width:0; }
-.mname { font-size:13px; color:var(--white); font-weight:500; }
-.mnick { font-size:11px; color:var(--g300); margin-top:1px; }
-.sel-tag {
-  font-size:10px; font-weight:700; padding:2px 9px; border-radius:10px; margin-left:5px;
-}
-.st-s { background:rgba(200,150,12,.25); color:var(--gold-lt); }
-.st-o { background:rgba(14,144,112,.3); color:#4adebc; }
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.av-b{background:#14285C;color:#7EB3FF;}
+.av-t{background:#0A2E28;color:#3DD9BD;}
+.av-g{background:#1A2E00;color:#9DE84E;}
+.av-p{background:#24125A;color:#B8A0FF;}
+.av-r{background:#3C1010;color:#FF9A8A;}
 
-/* ── ROUND SELECTOR (for double-vote) ── */
-.round-sel {
-  display:flex; gap:6px; margin-bottom:12px;
-}
-.rselbtn {
-  flex:1; padding:9px; border-radius:var(--r-sm);
-  border:1px solid rgba(255,255,255,0.12);
-  background:rgba(255,255,255,0.03);
-  color:var(--g300); font-size:12px; font-weight:600;
-  cursor:pointer; text-align:center; transition:all .12s;
-}
-.rselbtn.on { background:var(--red-bg); border-color:rgba(217,48,37,0.5); color:#FF9088; }
-.rselbtn.done { border-color:rgba(14,144,112,0.4); color:#4adebc; background:rgba(14,144,112,0.08); cursor:default; }
+.minfo{flex:1;min-width:0;}
+.mname-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px;}
+.mname{font-size:13px;color:var(--white);font-weight:500;}
+.mnick{font-size:10px;color:var(--g300);}
+.mrole{font-size:10px;color:var(--g500);}
+.mmission{font-size:11px;color:var(--g300);line-height:1.5;margin-top:3px;}
+.sel-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:2px;}
+.st-s{background:rgba(200,150,12,.25);color:var(--gold-lt);}
+.st-o{background:rgba(14,144,112,.3);color:#4adebc;}
+.st-f{background:rgba(200,150,12,.25);color:var(--gold-lt);}
+.me-tag{font-size:10px;color:var(--g500);margin-left:4px;}
 
-/* ── PICK SUMMARY ── */
-.picks-box {
-  background:var(--navy-mid); border:1px solid rgba(255,255,255,0.08);
-  border-radius:var(--r-md); padding:12px 14px; margin-bottom:12px;
-}
-.picks-row { display:flex; gap:7px; margin-top:8px; flex-wrap:wrap; }
-.ppill {
-  font-size:12px; padding:5px 12px; border-radius:20px;
-  display:flex; align-items:center; gap:4px;
-}
-.pp-s { background:rgba(200,150,12,.18); color:var(--gold-lt); border:1px solid var(--gold-bdr); }
-.pp-o { background:rgba(14,144,112,.18); color:#4adebc; border:1px solid var(--teal-bdr); }
-.pp-e { background:rgba(255,255,255,.04); color:var(--g300); border:1px solid rgba(255,255,255,.09); }
+/* PICKS */
+.picks-box{background:var(--navy-mid);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-md);padding:12px 14px;margin-bottom:12px;}
+.picks-row{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;}
+.ppill{font-size:12px;padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:4px;}
+.pp-s{background:rgba(200,150,12,.18);color:var(--gold-lt);border:1px solid var(--gold-bdr);}
+.pp-o{background:rgba(14,144,112,.18);color:#4adebc;border:1px solid var(--teal-bdr);}
+.pp-f{background:rgba(200,150,12,.18);color:var(--gold-lt);border:1px solid var(--gold-bdr);}
+.pp-e{background:rgba(255,255,255,.04);color:var(--g300);border:1px solid rgba(255,255,255,.09);}
 
-/* ── SUBMIT ── */
-.sbtn {
-  width:100%; padding:14px; border-radius:var(--r-md);
-  background:var(--gold); color:var(--navy);
-  border:none; font-size:15px; font-weight:700; cursor:pointer;
-  transition:opacity .14s; margin-bottom:20px;
-  letter-spacing:-.01em;
-}
-.sbtn:disabled { opacity:.28; cursor:not-allowed; }
-.sbtn:not(:disabled):hover { opacity:.86; }
+/* SUBMIT */
+.sbtn{width:100%;padding:14px;border-radius:var(--r-md);background:var(--gold);color:var(--navy);border:none;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .14s;margin-bottom:20px;}
+.sbtn:disabled{opacity:.28;cursor:not-allowed;}
+.sbtn:not(:disabled):hover{opacity:.86;}
 
-/* ── RESULTS (admin only) ── */
-.admin-only-notice {
-  background:var(--navy-mid); border:1px solid rgba(255,255,255,0.08);
-  border-radius:var(--r-lg); padding:32px 20px;
-  text-align:center;
-}
-.aon-icon { font-size:36px; margin-bottom:10px; }
-.aon-title { font-size:15px; font-weight:600; color:var(--white); margin-bottom:6px; }
-.aon-desc { font-size:12px; color:var(--g300); line-height:1.6; margin-bottom:16px; }
-.login-btn {
-  padding:10px 28px; border-radius:var(--r-md);
-  background:var(--gold-pale); border:1px solid var(--gold-bdr);
-  color:var(--gold-lt); font-size:13px; font-weight:600; cursor:pointer;
-}
+/* ADMIN LOCKED */
+.locked-box{background:var(--navy-mid);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-lg);padding:36px 20px;text-align:center;}
+.locked-icon{font-size:38px;margin-bottom:10px;}
+.locked-title{font-size:15px;font-weight:600;margin-bottom:6px;}
+.locked-desc{font-size:12px;color:var(--g300);line-height:1.6;margin-bottom:16px;}
+.login-btn{padding:10px 28px;border-radius:var(--r-md);background:var(--gold-pale);border:1px solid var(--gold-bdr);color:var(--gold-lt);font-size:13px;font-weight:600;cursor:pointer;}
 
-/* ── WINNER CARD ── */
-.winner-card {
-  background:linear-gradient(135deg, rgba(200,150,12,.22), rgba(200,150,12,.06));
-  border:1px solid rgba(200,150,12,.5);
-  border-radius:var(--r-lg); padding:15px 16px;
-  display:flex; align-items:center; gap:14px; margin-bottom:14px;
-}
-.w-trophy { font-size:30px; }
-.w-label { font-size:9px; color:var(--gold); letter-spacing:.12em; text-transform:uppercase; }
-.w-name { font-size:18px; font-weight:700; color:var(--gold-lt); margin:3px 0 2px; }
-.w-sub { font-size:11px; color:var(--g300); }
+/* ADMIN DASHBOARD */
+.adash-section{margin-bottom:20px;}
+.adash-title{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;border-bottom:1px solid var(--gold-bdr);padding-bottom:6px;margin-bottom:12px;}
 
-/* ── RESULT LIST ── */
-.ritem {
-  background:var(--navy-mid); border:1px solid rgba(255,255,255,0.07);
-  border-radius:var(--r-md); padding:11px 14px;
-  display:flex; align-items:center; gap:11px; margin-bottom:8px;
-}
-.rrank { font-size:15px; font-weight:700; min-width:24px; text-align:center; }
-.rr1 { color:var(--gold-lt); }
-.rr2 { color:var(--g300); }
-.rr3 { color:#CC8866; }
-.rrn { color:var(--g500); font-size:13px; }
-.bwrap { flex:1; }
-.btop { display:flex; justify-content:space-between; margin-bottom:5px; align-items:baseline; }
-.bname { font-size:13px; color:var(--white); font-weight:500; }
-.bnick { font-size:10px; color:var(--g300); margin-left:5px; }
-.bcnt { font-size:12px; color:var(--gold-lt); font-weight:700; }
-.bbg { height:5px; background:rgba(255,255,255,.07); border-radius:3px; overflow:hidden; }
-.bfill { height:100%; background:var(--gold); border-radius:3px; transition:width .5s ease; }
+/* NOT VOTED LIST */
+.not-voted-box{background:var(--red-bg);border:1px solid var(--red-bdr);border-radius:var(--r-md);padding:12px 14px;margin-bottom:14px;}
+.nv-title{font-size:12px;font-weight:700;color:#FF9088;margin-bottom:8px;}
+.nv-pills{display:flex;flex-wrap:wrap;gap:6px;}
+.nv-pill{font-size:11px;padding:4px 12px;border-radius:20px;background:rgba(217,48,37,.2);color:#FF9088;border:1px solid var(--red-bdr);}
 
-/* ── VOTER DETAIL (admin) ── */
-.det-box {
-  background:var(--navy-card); border:1px solid rgba(255,255,255,0.07);
-  border-radius:var(--r-md); margin-bottom:10px; overflow:hidden;
-}
-.det-head {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:9px 14px; background:rgba(255,255,255,.03);
-  border-bottom:1px solid rgba(255,255,255,.05);
-}
-.det-name { font-size:13px; font-weight:600; color:var(--white); }
-.det-cnt { font-size:11px; font-weight:700; padding:2px 10px; border-radius:10px; background:var(--gold-pale); color:var(--gold-lt); }
-.det-voters { padding:8px 14px; }
-.det-voter { font-size:11px; color:var(--g300); margin-bottom:3px; }
-.det-voter:last-child { margin-bottom:0; }
+/* WINNER */
+.winner-card{background:linear-gradient(135deg,rgba(200,150,12,.22),rgba(200,150,12,.06));border:1px solid rgba(200,150,12,.5);border-radius:var(--r-lg);padding:15px 16px;display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.w-trophy{font-size:30px;}
+.w-label{font-size:9px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;}
+.w-name{font-size:18px;font-weight:700;color:var(--gold-lt);margin:3px 0 2px;}
+.w-sub{font-size:11px;color:var(--g300);}
 
-/* ── MONTHLY ── */
-.mtable {
-  background:var(--navy-mid); border:1px solid rgba(255,255,255,.07);
-  border-radius:var(--r-lg); overflow:hidden; margin-bottom:12px;
-}
-.mth { display:flex; padding:9px 14px; background:rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.05); font-size:9px; color:var(--g500); font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
-.mtr { display:flex; align-items:center; gap:9px; padding:8px 14px; border-bottom:1px solid rgba(255,255,255,.04); }
-.mtr:last-child { border-bottom:none; }
-.mtr-rank { font-size:12px; color:var(--g500); min-width:20px; }
-.mtr-name { flex:1; font-size:13px; color:var(--white); }
-.mtr-nick { font-size:10px; color:var(--g300); margin-left:4px; }
-.mtr-pts { font-size:12px; font-weight:700; padding:2px 11px; border-radius:20px; background:var(--gold-pale); color:var(--gold-lt); }
+/* RESULT LIST */
+.ritem{background:var(--navy-mid);border:1px solid rgba(255,255,255,.07);border-radius:var(--r-md);padding:11px 14px;display:flex;align-items:center;gap:11px;margin-bottom:8px;}
+.rrank{font-size:15px;font-weight:700;min-width:24px;text-align:center;}
+.rr1{color:var(--gold-lt);}
+.rr2{color:var(--g300);}
+.rr3{color:#CC8866;}
+.rrn{color:var(--g500);font-size:13px;}
+.bwrap{flex:1;}
+.btop{display:flex;justify-content:space-between;margin-bottom:5px;align-items:baseline;}
+.bname{font-size:13px;color:var(--white);font-weight:500;}
+.bnick{font-size:10px;color:var(--g300);margin-left:5px;}
+.bcnt{font-size:12px;color:var(--gold-lt);font-weight:700;}
+.bbg{height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;}
+.bfill{height:100%;background:var(--gold);border-radius:3px;transition:width .5s ease;}
 
-.mwinner-card {
-  background:linear-gradient(135deg, rgba(200,150,12,.2), rgba(200,150,12,.04));
-  border:1px solid rgba(200,150,12,.38); border-radius:var(--r-lg);
-  padding:14px 16px; margin-bottom:12px; text-align:center;
-}
-.mwl { font-size:9px; color:var(--gold); letter-spacing:.12em; text-transform:uppercase; }
-.mwn { font-size:19px; font-weight:700; color:var(--gold-lt); margin:4px 0 2px; }
-.mws { font-size:11px; color:var(--g300); }
+/* VOTER DETAIL */
+.det-box{background:var(--navy-card);border:1px solid rgba(255,255,255,.07);border-radius:var(--r-md);margin-bottom:8px;overflow:hidden;}
+.det-head{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);}
+.det-name{font-size:13px;font-weight:600;color:var(--white);}
+.det-cnt{font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px;background:var(--gold-pale);color:var(--gold-lt);}
+.det-voters{padding:8px 14px;}
+.det-voter{font-size:11px;color:var(--g300);margin-bottom:3px;display:flex;align-items:center;gap:6px;}
+.det-voter:last-child{margin-bottom:0;}
+.voter-name{color:var(--white);font-weight:500;}
 
-/* ── SECTION DIVIDER ── */
-.sdiv {
-  font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
-  color:var(--gold); border-bottom:1px solid var(--gold-bdr);
-  padding-bottom:6px; margin:16px 0 12px;
-}
+/* MONTHLY */
+.mtable{background:var(--navy-mid);border:1px solid rgba(255,255,255,.07);border-radius:var(--r-lg);overflow:hidden;margin-bottom:12px;}
+.mth{display:flex;padding:9px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05);font-size:9px;color:var(--g500);font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+.mtr{display:flex;align-items:center;gap:9px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.04);}
+.mtr:last-child{border-bottom:none;}
+.mtr-rank{font-size:12px;color:var(--g500);min-width:20px;}
+.mtr-name{flex:1;font-size:13px;color:var(--white);}
+.mtr-nick{font-size:10px;color:var(--g300);margin-left:4px;}
+.mtr-pts{font-size:12px;font-weight:700;padding:2px 11px;border-radius:20px;background:var(--gold-pale);color:var(--gold-lt);}
+.mwinner{background:linear-gradient(135deg,rgba(200,150,12,.2),rgba(200,150,12,.04));border:1px solid rgba(200,150,12,.38);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:12px;text-align:center;}
+.mwl{font-size:9px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;}
+.mwn{font-size:19px;font-weight:700;color:var(--gold-lt);margin:4px 0 2px;}
+.mws{font-size:11px;color:var(--g300);}
 
-/* ── EMPTY ── */
-.empty { text-align:center; padding:36px 20px; color:var(--g300); font-size:13px; }
-.empty .ei { font-size:34px; margin-bottom:10px; opacity:.45; display:block; }
+.sdiv{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--gold-bdr);padding-bottom:6px;margin:16px 0 12px;}
+.empty{text-align:center;padding:36px 20px;color:var(--g300);font-size:13px;}
+.empty .ei{font-size:34px;margin-bottom:10px;opacity:.45;display:block;}
 
-/* ── MODAL ── */
-.modal-bg {
-  display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,.75); z-index:100;
-  align-items:center; justify-content:center;
-}
-.modal-bg.open { display:flex; }
-.modal {
-  background:var(--navy-mid); border:1px solid var(--gold-bdr);
-  border-radius:var(--r-xl); padding:26px 22px;
-  width:90%; max-width:400px;
-}
-.modal h2 { font-size:16px; color:var(--gold-lt); margin-bottom:5px; }
-.modal p { font-size:12px; color:var(--g300); margin-bottom:16px; line-height:1.6; }
-.modal input {
-  width:100%; padding:11px 14px; border-radius:var(--r-sm);
-  border:1px solid rgba(255,255,255,.15);
-  background:rgba(255,255,255,.06); color:var(--white);
-  font-size:14px; margin-bottom:8px;
-}
-.modal input:focus { outline:none; border-color:var(--gold); }
-.merr { font-size:11px; color:#ff7b6e; margin-bottom:8px; display:none; }
-.mbtns { display:flex; gap:8px; }
-.mok { flex:1; padding:11px; border-radius:var(--r-sm); background:var(--gold); color:var(--navy); border:none; font-size:14px; font-weight:700; cursor:pointer; }
-.mcancel { padding:11px 16px; border-radius:var(--r-sm); background:transparent; color:var(--g300); border:1px solid rgba(255,255,255,.12); font-size:14px; cursor:pointer; }
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--navy-mid);border:1px solid var(--gold-bdr);border-radius:var(--r-xl);padding:26px 22px;width:90%;max-width:400px;}
+.modal h2{font-size:16px;color:var(--gold-lt);margin-bottom:5px;}
+.modal p{font-size:12px;color:var(--g300);margin-bottom:16px;line-height:1.6;}
+.modal input{width:100%;padding:11px 14px;border-radius:var(--r-sm);border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:var(--white);font-size:14px;margin-bottom:8px;}
+.modal input:focus{outline:none;border-color:var(--gold);}
+.merr{font-size:11px;color:#ff7b6e;margin-bottom:8px;display:none;}
+.mbtns{display:flex;gap:8px;}
+.mok{flex:1;padding:11px;border-radius:var(--r-sm);background:var(--gold);color:var(--navy);border:none;font-size:14px;font-weight:700;cursor:pointer;}
+.mcancel{padding:11px 16px;border-radius:var(--r-sm);background:transparent;color:var(--g300);border:1px solid rgba(255,255,255,.12);font-size:14px;cursor:pointer;}
 
-/* ── TOAST ── */
-.toast {
-  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
-  background:var(--navy-mid); border:1px solid var(--gold-bdr);
-  color:var(--gold-lt); padding:10px 22px; border-radius:24px;
-  font-size:13px; font-weight:600; z-index:200; white-space:nowrap;
-  animation:toastUp .22s ease;
-}
-@keyframes toastUp { from{opacity:0;bottom:12px} to{opacity:1;bottom:24px} }
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy-mid);border:1px solid var(--gold-bdr);color:var(--gold-lt);padding:10px 22px;border-radius:24px;font-size:13px;font-weight:600;z-index:200;white-space:nowrap;animation:toastUp .22s ease;}
+@keyframes toastUp{from{opacity:0;bottom:12px}to{opacity:1;bottom:24px}}
 
-/* ── ADMIN BADGE ── */
-.admin-badge {
-  position:absolute; top:20px; right:16px;
-  font-size:10px; color:var(--g300);
-  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
-  border-radius:20px; padding:4px 12px; cursor:pointer;
-  transition:all .12s;
-}
-.admin-badge:hover { color:var(--gold-lt); border-color:var(--gold-bdr); }
-.admin-badge.authed { color:var(--gold-lt); border-color:var(--gold-bdr); background:var(--gold-pale); }
-
-.spin {
-  display:inline-block; width:18px; height:18px;
-  border:2px solid rgba(255,255,255,.1);
-  border-top-color:var(--gold); border-radius:50%;
-  animation:spin .65s linear infinite; vertical-align:middle; margin-right:6px;
-}
-@keyframes spin { to{transform:rotate(360deg)} }
-
-@media(max-width:380px){
-  .hdr-title { font-size:20px; }
-  .rtab { font-size:11px; padding:9px 4px; }
-}
+@media(max-width:380px){.hdr-title{font-size:20px;}.rtab{font-size:11px;padding:9px 4px;}.who-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- HEADER -->
-  <header class="hdr">
-    <div class="hdr-eyebrow">마케팅본부 · 2026</div>
-    <h1 class="hdr-title">반반한 <em>설계자</em> 투표</h1>
-    <p class="hdr-sub">매주 동료들의 활약을 함께 인정해요</p>
-    <button class="admin-badge" id="adminBadge" onclick="openAdminModal()">🔒 관리자</button>
-  </header>
+<header class="hdr">
+  <div class="hdr-eye">마케팅본부 · 2026</div>
+  <h1 class="hdr-title">반반한 <em>설계자</em> 투표</h1>
+  <p class="hdr-sub">매주 동료들의 활약을 함께 인정해요</p>
+  <button class="admin-btn" id="adminBtn" onclick="openAdminModal()">🔒 관리자</button>
+</header>
 
-  <!-- WEEK BANNER -->
-  <div class="week-banner">
-    <div class="wb-left">
-      <div class="wb-week" id="wbWeek">로딩 중…</div>
-      <div class="wb-range" id="wbRange"></div>
-    </div>
-    <span class="wb-badge" id="wbBadge"></span>
+<div class="wbanner">
+  <div>
+    <div class="wb-week" id="wbWeek">로딩 중…</div>
+    <div class="wb-range" id="wbRange"></div>
+  </div>
+  <span class="wb-badge" id="wbBadge"></span>
+</div>
+
+<div class="sp-notice" id="spNotice">
+  ⚡ <strong>이번 주 특별 2회 투표 주간!</strong><br>
+  7월 1주차 + 7월 2주차 투표를 이번 주 함께 진행합니다. 두 라운드 모두 투표해 주세요!
+</div>
+
+<div class="rtabs">
+  <button class="rtab on" id="tab-great" onclick="setCat('great')">
+    <span class="rnum">① 댓츠그뤠잇</span>임무 수행 우수자
+  </button>
+  <button class="rtab" id="tab-chok" onclick="setCat('chok')">
+    <span class="rnum">② 이달의왕촉새</span>소통·스몰토크왕
+  </button>
+</div>
+
+<div class="vpills">
+  <button class="vpill on" id="vp-vote" onclick="setView('vote')">투표하기</button>
+  <button class="vpill" id="vp-results" onclick="setView('results')">이번 주 결과</button>
+  <button class="vpill" id="vp-monthly" onclick="setView('monthly')">월간 누적</button>
+</div>
+
+<!-- VOTE PANEL -->
+<div class="panel on" id="panel-vote">
+  <div class="rule" id="ruleBox"></div>
+
+  <!-- WHO AM I -->
+  <div class="who-box" id="whoBox">
+    <div class="who-title">👋 나는 누구인가요?</div>
+    <div class="who-desc">본인 이름을 선택해 주세요. 선택 후 투표가 시작됩니다.<br>본인은 투표할 수 없으며, 한 번 투표하면 이번 주는 재투표 불가입니다.</div>
+    <div class="who-grid" id="whoGrid"></div>
   </div>
 
-  <!-- SPECIAL WEEK NOTICE -->
-  <div class="special-notice" id="specialNotice">
-    ⚡ <strong>이번 주 특별 2회 투표 주간!</strong><br>
-    7월 1주차 투표와 7월 2주차 투표를 이번 주 함께 진행합니다. 두 라운드 모두 투표해 주세요!
-  </div>
-
-  <!-- CATEGORY TABS -->
-  <div class="rtabs">
-    <button class="rtab on" id="tab-great" onclick="setCat('great')">
-      <span class="rnum">① 댓츠그뤠잇</span>임무 수행 우수자
-    </button>
-    <button class="rtab" id="tab-chok" onclick="setCat('chok')">
-      <span class="rnum">② 이달의왕촉새</span>소통·스몰토크왕
-    </button>
-  </div>
-
-  <!-- VIEW PILLS -->
-  <div class="vpills">
-    <button class="vpill on" id="vp-vote" onclick="setView('vote')">투표하기</button>
-    <button class="vpill" id="vp-results" onclick="setView('results')">이번 주 결과</button>
-    <button class="vpill" id="vp-monthly" onclick="setView('monthly')">월간 누적</button>
-  </div>
-
-  <!-- ── VOTE PANEL ── -->
-  <div class="panel on" id="panel-vote">
-
-    <!-- rule -->
-    <div class="rule" id="ruleBox"></div>
-
-    <!-- double-vote round selector (shown only in special week) -->
-    <div id="roundSelWrap" style="display:none">
-      <div class="slbl" style="margin-bottom:6px">투표 라운드 선택</div>
-      <div class="round-sel">
-        <button class="rselbtn" id="rbtn-r1" onclick="setRound(1)">
-          📅 1라운드<br><span style="font-size:10px;font-weight:400">7월 1주차분</span>
-        </button>
-        <button class="rselbtn" id="rbtn-r2" onclick="setRound(2)">
-          📅 2라운드<br><span style="font-size:10px;font-weight:400">7월 2주차분</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- team setup -->
-    <div id="setupWrap" style="display:none">
-      <div class="setup-box">
-        <div class="setup-title">처음 오셨군요! 👋</div>
-        <div class="setup-desc">소속 팀을 선택해 주세요. 선택한 팀에서 1명, 다른 팀에서 1명을 투표할 수 있어요.</div>
-        <div class="team-pills" id="teamPills"></div>
-      </div>
-    </div>
-
-    <!-- member grid -->
-    <div id="teamsArea" style="display:none">
-      <div class="slbl">팀원 선택</div>
-      <div class="tgrid" id="teamsGrid"></div>
-      <div class="picks-box">
-        <div class="slbl" style="margin-bottom:6px">내 선택</div>
-        <div class="picks-row" id="picksRow"></div>
-      </div>
-      <button class="sbtn" id="sbtn" onclick="submitVote()">투표 제출</button>
-    </div>
-
-  </div>
-
-  <!-- ── RESULTS PANEL ── -->
-  <div class="panel" id="panel-results">
-    <div id="resultsContent">
-      <div class="empty"><span class="ei">📊</span>투표 결과는 마스터 윤교주만 확인할 수 있어요<br><br><button class="login-btn" onclick="openAdminModal()">관리자 로그인</button></div>
+  <!-- ROUND SEL (special week) -->
+  <div id="roundSelWrap" style="display:none">
+    <div class="slbl" style="margin-bottom:6px">투표 라운드 선택</div>
+    <div class="round-sel">
+      <button class="rselbtn" id="rbtn-r1" onclick="setRound(1)">
+        📅 1라운드<br><span style="font-size:10px;font-weight:400">7월 1주차분</span>
+      </button>
+      <button class="rselbtn" id="rbtn-r2" onclick="setRound(2)">
+        📅 2라운드<br><span style="font-size:10px;font-weight:400">7월 2주차분</span>
+      </button>
     </div>
   </div>
 
-  <!-- ── MONTHLY PANEL ── -->
-  <div class="panel" id="panel-monthly">
-    <div id="monthlyContent">
-      <div class="empty"><span class="ei">📅</span>월간 집계는 마스터 윤교주만 확인할 수 있어요<br><br><button class="login-btn" onclick="openAdminModal()">관리자 로그인</button></div>
+  <!-- MEMBER GRID -->
+  <div id="teamsArea" style="display:none">
+    <div class="slbl">팀원 선택</div>
+    <div class="tgrid" id="teamsGrid"></div>
+    <div class="picks-box">
+      <div class="slbl" style="margin-bottom:6px">내 선택</div>
+      <div class="picks-row" id="picksRow"></div>
+    </div>
+    <button class="sbtn" id="sbtn" onclick="submitVote()">투표 제출</button>
+  </div>
+</div>
+
+<!-- RESULTS PANEL -->
+<div class="panel" id="panel-results">
+  <div id="resultsContent">
+    <div class="locked-box">
+      <div class="locked-icon">🔒</div>
+      <div class="locked-title">관리자 전용</div>
+      <div class="locked-desc">투표 결과는 마스터 윤교주만 확인할 수 있어요.</div>
+      <button class="login-btn" onclick="openAdminModal()">관리자 로그인</button>
     </div>
   </div>
+</div>
+
+<!-- MONTHLY PANEL -->
+<div class="panel" id="panel-monthly">
+  <div id="monthlyContent">
+    <div class="locked-box">
+      <div class="locked-icon">🔒</div>
+      <div class="locked-title">관리자 전용</div>
+      <div class="locked-desc">월간 집계는 마스터 윤교주만 확인할 수 있어요.</div>
+      <button class="login-btn" onclick="openAdminModal()">관리자 로그인</button>
+    </div>
+  </div>
+</div>
 
 </div><!-- /wrap -->
 
-<!-- ADMIN LOGIN MODAL -->
+<!-- ADMIN MODAL -->
 <div class="modal-bg" id="adminModal">
   <div class="modal">
     <h2>🔐 마스터 로그인</h2>
-    <p>투표 결과 상세 내역은 마스터 윤교주만 확인할 수 있습니다.</p>
+    <p>투표 결과 및 상세 내역은 마스터 윤교주만 확인 가능합니다.</p>
     <input type="password" id="adminPw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')checkAdmin()">
     <div class="merr" id="adminErr">비밀번호가 틀렸습니다.</div>
     <div class="mbtns">
@@ -507,498 +346,504 @@ body::before {
 </div>
 
 <script>
-/* ═══════════════════════════════════════════
-   ★ CONFIG — Google Apps Script URL 여기에 입력
-   ═══════════════════════════════════════════ */
-const GAS_URL  = 'https://script.google.com/macros/s/AKfycbyUG_Q8V9OdfMN28GkGq_r5eMyLWFJNaDe9dLk67whqxoD2zhktbX9pK7Xo7AaiBMoA1Q/exec'; // ← 배포 후 교체
-const ADMIN_PW = 'banban2026';                 // ← 원하는 비밀번호로 변경
+/* ══════════════════════════════════════
+   CONFIG
+══════════════════════════════════════ */
+const GAS_URL       = 'https://script.google.com/macros/s/AKfycbyUG_Q8V9OdfMN28GkGq_r5eMyLWFJNaDe9dLk67whqxoD2zhktbX9pK7Xo7AaiBMoA1Q/exec'; // ← 교체
+const ADMIN_PW      = 'banban2026';                 // ← 변경
+const IS_SPECIAL_WEEK = true; // 특별 2회 투표 주간이면 true, 아니면 false
 
-/* ── 이번 주를 특별 2회 투표 주간으로 지정 ──
-   true 로 설정하면 이번 주에 2개 라운드 투표 가능
-   일정 지나면 false 로 돌려놓으면 됨
-*/
-const IS_SPECIAL_WEEK = true;
-
-/* ═══════════════════════════════════════════
+/* ══════════════════════════════════════
    MEMBERS
-   ═══════════════════════════════════════════ */
+══════════════════════════════════════ */
 const MEMBERS = [
-  // 본부
-  { id:'yoon',   name:'윤지혜',  nick:'윤교주',    team:'본부',  role:'본부장', av:'av-b' },
-  // 1국
-  { id:'jang',   name:'장미령',  nick:'장침',      team:'1국',   role:'국장',   av:'av-t' },
+  // 본부 (소속팀 없음 → 아무나 2명)
+  { id:'yoon',   name:'윤지혜',   nick:'윤교주',   team:'본부', role:'본부장', freeVote:true,
+    mission:'조직의 세계관을 지배하고 전도와 전투(영업)력 강화', av:'av-b' },
+  // 1국 (소속팀 없음 → 아무나 2명)
+  { id:'jang',   name:'장미령',   nick:'장침',     team:'1국',  role:'국장',   freeVote:true,
+    mission:'침처럼 뾰족하게 시장 인사이트를 파악하고, 조직원들 업무 역량 강화 집중', av:'av-t' },
   // 1팀
-  { id:'kim_b',  name:'김범수',  nick:'닥터범',    team:'1팀',   role:'팀장',   av:'av-r' },
-  { id:'song_j', name:'송주영',  nick:'육각이형',  team:'1팀',   role:'셀장',   av:'av-b' },
-  { id:'lim_s',  name:'임수빈',  nick:'빈선배',    team:'1팀',   role:'셀장',   av:'av-t' },
-  { id:'kim_h',  name:'김혜지',  nick:'쾌지',      team:'1팀',   role:'선임',   av:'av-p' },
-  { id:'jeong',  name:'정송윤',  nick:'물의정령',  team:'1팀',   role:'주임',   av:'av-g' },
-  { id:'kim_j',  name:'김주은',  nick:'공주은',    team:'1팀',   role:'사원',   av:'av-b' },
-  { id:'kang',   name:'강지은',  nick:'다람쥐은',  team:'1팀',   role:'사원',   av:'av-t' },
+  { id:'kim_b',  name:'김범수',   nick:'닥터범',   team:'1팀',  role:'팀장',   freeVote:false,
+    mission:'업무와 전략 도출에 필요한 AI 기능 연구 및 전파, 조직 업무 효율화 집중', av:'av-r' },
+  { id:'song_j', name:'송주영',   nick:'육각이형', team:'1팀',  role:'셀장',   freeVote:false,
+    mission:'팀의 맏 선임으로서 리더와 조직원들을 연결하는 만능 재주꾼이자 허브', av:'av-b' },
+  { id:'lim_s',  name:'임수빈',   nick:'빈선배',   team:'1팀',  role:'셀장',   freeVote:false,
+    mission:'장기근속자로서 회사 내 협력 업무 주도 및 이슈 내부 전파', av:'av-t' },
+  { id:'kim_h',  name:'김혜지',   nick:'쾌지',     team:'1팀',  role:'선임',   freeVote:false,
+    mission:'명쾌한 판단력으로 고객사 및 외부 마케팅 전략 모니터링', av:'av-p' },
+  { id:'jeong',  name:'정송윤',   nick:'물의정령', team:'1팀',  role:'주임',   freeVote:false,
+    mission:'조용하지만 재빠르게 필요한 데이터와 인사이트 추출 및 구조화', av:'av-g' },
+  { id:'kim_j',  name:'김주은',   nick:'공주은',   team:'1팀',  role:'사원',   freeVote:false,
+    mission:'여리지만 강하게 주어진 업무를 해내고 팀 내 데이터 체계화에 집중', av:'av-b' },
+  { id:'kang',   name:'강지은',   nick:'다람쥐은', team:'1팀',  role:'사원',   freeVote:false,
+    mission:'재빠르게 업무를 수행하고 다음 열매(신규 영업)를 모니터링', av:'av-t' },
   // 2팀
-  { id:'lee',    name:'이상미',  nick:'티쳐리',    team:'2팀',   role:'팀장',   av:'av-r' },
-  { id:'seo',    name:'서무구',  nick:'구구박사',  team:'2팀',   role:'선임',   av:'av-b' },
-  { id:'song_s', name:'송시하',  nick:'예삐',      team:'2팀',   role:'주임',   av:'av-p' },
-  { id:'sim',    name:'심규영',  nick:'뀨도사',    team:'2팀',   role:'주임',   av:'av-t' },
-  { id:'noh_h',  name:'노하은',  nick:'꼼꼬미',    team:'2팀',   role:'주임',   av:'av-g' },
-  // 3팀 (최선영 퇴사 제외)
-  { id:'noh_e',  name:'노을아래',nick:'노을센세',  team:'3팀',   role:'팀장',   av:'av-r' },
-  { id:'cho',    name:'조유나',  nick:'나나조',    team:'3팀',   role:'셀장',   av:'av-b' },
-  { id:'min',    name:'민형준',  nick:'훈민',      team:'3팀',   role:'선임',   av:'av-p' },
-  { id:'park',   name:'박소윤',  nick:'엔젤핑',    team:'3팀',   role:'주임',   av:'av-g' },
-  { id:'yoon_s', name:'윤소혜',  nick:'백병아리',  team:'3팀',   role:'주임',   av:'av-b' },
-  { id:'lim_m',  name:'임문영',  nick:'도요주',    team:'3팀',   role:'주임',   av:'av-t' },
+  { id:'lee',    name:'이상미',   nick:'티쳐리',   team:'2팀',  role:'팀장',   freeVote:false,
+    mission:'조직원들에게 맞춤형 눈높이 선생님 역할을 하며 원활한 업무 수행이 가능하도록 육성', av:'av-r' },
+  { id:'seo',    name:'서무구',   nick:'구구박사', team:'2팀',  role:'선임',   freeVote:false,
+    mission:'어떤 일이던 척척 해내며 척척박사의 면모를 조직원들에게 전파', av:'av-b' },
+  { id:'song_s', name:'송시하',   nick:'예삐',     team:'2팀',  role:'주임',   freeVote:false,
+    mission:'대내외적으로 해피한 분위기와 결과물을 예쁘게 완성시키는 역할', av:'av-p' },
+  { id:'sim',    name:'심규영',   nick:'뀨도사',   team:'2팀',  role:'주임',   freeVote:false,
+    mission:'내공 있는 깊은 분석력으로 전략을 설계하고 실행 결과 전파', av:'av-t' },
+  { id:'noh_h',  name:'노하은',   nick:'꼼꼬미',   team:'2팀',  role:'주임',   freeVote:false,
+    mission:'꼼꼼함을 무기로 데이터 및 자료의 오류를 방지하고 신뢰를 완성시키는 역할', av:'av-g' },
+  // 3팀
+  { id:'noh_e',  name:'노을아래', nick:'노을센세', team:'3팀',  role:'팀장',   freeVote:false,
+    mission:'차가운 카리스마로 조직원들의 대내외적 올곧은 에티튜드의 가이드 역할', av:'av-r' },
+  { id:'cho',    name:'조유나',   nick:'나나조',   team:'3팀',  role:'셀장',   freeVote:false,
+    mission:'부서장들 다음으로 본부의 맏 언니로서 연륜과 지식을 나누어주고 전파', av:'av-b' },
+  { id:'min',    name:'민형준',   nick:'훈민',     team:'3팀',  role:'선임',   freeVote:false,
+    mission:'신문물과 새로운 실무 스킬을 훈훈하게 전달하고 전파', av:'av-p' },
+  { id:'park',   name:'박소윤',   nick:'엔젤핑',   team:'3팀',  role:'주임',   freeVote:false,
+    mission:'빠르고 정확한 실무 역량 스킬을 전파하고 시너지를 만들어내는 역할', av:'av-g' },
+  { id:'yoon_s', name:'윤소혜',   nick:'백병아리', team:'3팀',  role:'주임',   freeVote:false,
+    mission:'귀여운 겉모습 속에 강단 있고 뚝심있는 실무 스킬을 아이템의 밑거름으로 전환', av:'av-b' },
+  { id:'lim_m',  name:'임문영',   nick:'도요주',   team:'3팀',  role:'주임',   freeVote:false,
+    mission:'도라에몽 요술 주머니 같이 모든 준비 되어있는 데이터 만능꾼으로서 인사이트 업데이트', av:'av-t' },
 ];
 const TEAMS = ['본부','1국','1팀','2팀','3팀'];
 
-/* ═══════════════════════════════════════════
+/* ══════════════════════════════════════
    WEEK / MONTH LOGIC
-   금요일 기준: 월~금 → 그 주 금요일 키
-   토~일 → 다음 주 금요일 키
-   ═══════════════════════════════════════════ */
+══════════════════════════════════════ */
 function fridayKey(d) {
-  const day = d.getDay(); // 0=일 6=토
-  let diff = 5 - day;     // 금요일까지 남은 일수
+  const day = d.getDay();
+  let diff = 5 - day;
   if (diff < 0) diff += 7;
   const fri = new Date(d);
   fri.setDate(d.getDate() + diff);
   return `${fri.getFullYear()}-${p2(fri.getMonth()+1)}-${p2(fri.getDate())}`;
 }
 function p2(n){ return String(n).padStart(2,'0'); }
-
-function monthOfFriday(key) { return key.slice(0,7); } // "YYYY-MM"
-
-function weekNumInMonth(key) {
-  const fri = new Date(key);
-  const y = fri.getFullYear(), m = fri.getMonth();
-  const first = new Date(y, m, 1);
-  const firstFriDate = ((5 - first.getDay()) + 7) % 7 + 1;
-  return Math.floor((fri.getDate() - firstFriDate) / 7) + 1;
+function monthOfFri(key){ return key.slice(0,7); }
+function weekNumInMonth(key){
+  const fri=new Date(key), y=fri.getFullYear(), m=fri.getMonth();
+  const first=new Date(y,m,1);
+  const firstFriDate=((5-first.getDay())+7)%7+1;
+  return Math.floor((fri.getDate()-firstFriDate)/7)+1;
+}
+function weekLabel(key){
+  const fri=new Date(key), mon=new Date(fri);
+  mon.setDate(fri.getDate()-4);
+  const f=d=>`${d.getMonth()+1}/${d.getDate()}`;
+  return { label:`${fri.getMonth()+1}월 ${weekNumInMonth(key)}주차`, range:`${f(mon)} – ${f(fri)}` };
 }
 
-function weekLabel(key) {
-  const fri = new Date(key);
-  const mon = new Date(fri); mon.setDate(fri.getDate() - 4);
-  const f = d => `${d.getMonth()+1}/${d.getDate()}`;
-  const mo = fri.getMonth()+1;
-  const wn = weekNumInMonth(key);
-  return { label:`${mo}월 ${wn}주차`, range:`${f(mon)} – ${f(fri)}` };
-}
+const TODAY      = new Date();
+const CURR_WEEK  = fridayKey(TODAY);
+const CURR_MONTH = monthOfFri(CURR_WEEK);
+const PREV_WEEK  = (()=>{ const d=new Date(TODAY); d.setDate(d.getDate()-7); return fridayKey(d); })();
 
-/* ── SPECIAL WEEK: 이번 주 금요일 키 ── */
-const TODAY       = new Date();
-const CURR_WEEK   = fridayKey(TODAY);
-const CURR_MONTH  = monthOfFriday(CURR_WEEK);
-
-/* 특별 주간일 때 사용할 두 라운드 키 */
-// 이번 주 = 2라운드(7월 2주차), 지난 주 = 1라운드(7월 1주차)
-const PREV_WEEK   = (() => {
-  const d = new Date(TODAY); d.setDate(d.getDate() - 7); return fridayKey(d);
-})();
-
-/* ═══════════════════════════════════════════
+/* ══════════════════════════════════════
    STATE
-   ═══════════════════════════════════════════ */
-let cat     = 'great';
-let view    = 'vote';
-let myTeam  = localStorage.getItem('bb_team') || null;
-let isAdmin = false;
-let selS    = null, selO = null;
-let activeRound = IS_SPECIAL_WEEK ? 1 : 0; // 1 or 2 (0 = normal)
-let cache   = { week:{}, month:{} };
+══════════════════════════════════════ */
+let cat         = 'great';
+let view        = 'vote';
+let myId        = localStorage.getItem('bb_myid') || null;
+let isAdmin     = false;
+let selS        = null, selO = null, selF1 = null, selF2 = null;
+let activeRound = IS_SPECIAL_WEEK ? 1 : 0;
+let cache       = { weeks:{}, month:{} };
 
-/* voted flags: key = "cat_weekKey_round" */
-function votedKey(c, wk, round) {
-  return `bb_voted_${c}_${wk}_r${round}`;
-}
-function isVoted(c, wk, round) {
-  return localStorage.getItem(votedKey(c, wk, round)) === '1';
-}
-function markVoted(c, wk, round) {
-  localStorage.setItem(votedKey(c, wk, round), '1');
-}
+function activeWeekKey(){ return IS_SPECIAL_WEEK ? (activeRound===1?PREV_WEEK:CURR_WEEK) : CURR_WEEK; }
 
-/* active week key for current round */
-function activeWeekKey() {
-  if (!IS_SPECIAL_WEEK) return CURR_WEEK;
-  return activeRound === 1 ? PREV_WEEK : CURR_WEEK;
-}
+function votedKey(c,wk,r){ return `bb_v_${c}_${wk}_r${r}`; }
+function isVoted(c,wk,r){ return localStorage.getItem(votedKey(c,wk,r))==='1'; }
+function markVoted(c,wk,r){ localStorage.setItem(votedKey(c,wk,r),'1'); }
 
-/* ═══════════════════════════════════════════
+function getMe(){ return MEMBERS.find(m=>m.id===myId); }
+
+/* ══════════════════════════════════════
    INIT
-   ═══════════════════════════════════════════ */
+══════════════════════════════════════ */
 window.onload = () => {
   renderWeekBanner();
-  buildTeamPills();
-  if (IS_SPECIAL_WEEK) {
-    document.getElementById('specialNotice').style.display = 'block';
-  }
+  buildWhoGrid();
+  if(IS_SPECIAL_WEEK) document.getElementById('spNotice').style.display='block';
   setView('vote');
   fetchResults();
 };
 
-function renderWeekBanner() {
+function renderWeekBanner(){
   const info = weekLabel(CURR_WEEK);
   document.getElementById('wbWeek').textContent = info.label + ' 투표';
   document.getElementById('wbRange').textContent = info.range;
   const badge = document.getElementById('wbBadge');
-  if (IS_SPECIAL_WEEK) {
-    badge.textContent = '⚡ 2회 투표 주간';
-    badge.className = 'wb-badge special';
-  } else {
-    badge.textContent = `${TODAY.getMonth()+1}월`;
-    badge.className = 'wb-badge';
-  }
+  if(IS_SPECIAL_WEEK){ badge.textContent='⚡ 2회 투표 주간'; badge.className='wb-badge sp'; }
+  else { badge.textContent=`${TODAY.getMonth()+1}월`; badge.className='wb-badge'; }
 }
 
-/* ═══════════════════════════════════════════
-   CAT / VIEW
-   ═══════════════════════════════════════════ */
-function setCat(c) {
-  cat = c; selS = null; selO = null;
-  ['great','chok'].forEach(x =>
-    document.getElementById('tab-'+x).className = 'rtab'+(x===c?' on':''));
-  if (view === 'vote') renderVote();
-  else if (view === 'results') renderResults();
-  else renderMonthly();
-}
-
-function setView(v) {
-  view = v;
-  ['vote','results','monthly'].forEach(x => {
-    document.getElementById('panel-'+x).className = 'panel'+(x===v?' on':'');
-    document.getElementById('vp-'+x).className = 'vpill'+(x===v?' on':'');
+/* ══════════════════════════════════════
+   WHO AM I
+══════════════════════════════════════ */
+function buildWhoGrid(){
+  const grid = document.getElementById('whoGrid');
+  grid.innerHTML = '';
+  MEMBERS.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'who-btn' + (myId===m.id?' on':'');
+    btn.innerHTML = `<span class="who-name">${m.name}</span><span class="who-nick">${m.nick} · ${m.role}</span>`;
+    btn.onclick = () => selectMe(m.id);
+    grid.appendChild(btn);
   });
-  if (v === 'vote') renderVote();
-  else if (v === 'results') renderResults();
+}
+
+function selectMe(id){
+  myId = id;
+  localStorage.setItem('bb_myid', id);
+  selS=null; selO=null; selF1=null; selF2=null;
+  buildWhoGrid();
+  renderVote();
+}
+
+/* ══════════════════════════════════════
+   CAT / VIEW
+══════════════════════════════════════ */
+function setCat(c){
+  cat=c; selS=null; selO=null; selF1=null; selF2=null;
+  ['great','chok'].forEach(x=> document.getElementById('tab-'+x).className='rtab'+(x===c?' on':''));
+  if(view==='vote') renderVote();
+  else if(view==='results') renderResults();
   else renderMonthly();
 }
 
-/* ═══════════════════════════════════════════
-   ROUND SELECTOR
-   ═══════════════════════════════════════════ */
-function setRound(r) {
-  activeRound = r; selS = null; selO = null;
+function setView(v){
+  view=v;
+  ['vote','results','monthly'].forEach(x=>{
+    document.getElementById('panel-'+x).className='panel'+(x===v?' on':'');
+    document.getElementById('vp-'+x).className='vpill'+(x===v?' on':'');
+  });
+  if(v==='vote') renderVote();
+  else if(v==='results') renderResults();
+  else renderMonthly();
+}
+
+/* ══════════════════════════════════════
+   ROUND
+══════════════════════════════════════ */
+function setRound(r){
+  activeRound=r; selS=null; selO=null; selF1=null; selF2=null;
   renderRoundBtns();
   renderMemberGrid();
   renderPicks();
   updateSbtn();
 }
 
-function renderRoundBtns() {
-  if (!IS_SPECIAL_WEEK) return;
-  [1,2].forEach(r => {
-    const btn = document.getElementById('rbtn-r'+r);
-    const v1 = isVoted(cat, r===1?PREV_WEEK:CURR_WEEK, r);
-    if (v1) {
-      btn.className = 'rselbtn done';
-    } else {
-      btn.className = 'rselbtn'+(activeRound===r?' on':'');
-    }
+function renderRoundBtns(){
+  if(!IS_SPECIAL_WEEK) return;
+  [1,2].forEach(r=>{
+    const btn=document.getElementById('rbtn-r'+r);
+    const wk=r===1?PREV_WEEK:CURR_WEEK;
+    if(isVoted(cat,wk,r)) btn.className='rselbtn done';
+    else btn.className='rselbtn'+(activeRound===r?' on':'');
   });
 }
 
-/* ═══════════════════════════════════════════
-   VOTE RENDERING
-   ═══════════════════════════════════════════ */
-function buildTeamPills() {
-  const el = document.getElementById('teamPills');
-  el.innerHTML = '';
-  TEAMS.forEach(t => {
-    const b = document.createElement('button');
-    b.className = 'tpill'+(myTeam===t?' on':'');
-    b.textContent = t;
-    b.onclick = () => { myTeam = t; localStorage.setItem('bb_team', t); buildTeamPills(); renderVote(); };
-    el.appendChild(b);
-  });
-}
-
-function renderVote() {
+/* ══════════════════════════════════════
+   VOTE RENDER
+══════════════════════════════════════ */
+function renderVote(){
+  const me = getMe();
   const wk = activeWeekKey();
-  const voted = isVoted(cat, wk, IS_SPECIAL_WEEK ? activeRound : 1);
-  const catLabel = cat==='great' ? '댓츠그뤠잇' : '이달의왕촉새';
-  const catDesc  = cat==='great'
-    ? '이번 임무를 잘 수행한 동료'
-    : '스몰토크와 소통을 많이 한 동료';
+  const round = IS_SPECIAL_WEEK ? activeRound : 1;
+  const voted = me && isVoted(cat, wk, round);
+  const catLabel = cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
+  const catDesc  = cat==='great'?'임무를 잘 수행한 동료':'스몰토크와 소통을 많이 한 동료';
 
-  // rule box
   let ruleHtml = `<strong>${catLabel}</strong> — ${catDesc}를 선택해 주세요<br>`;
-  ruleHtml += `규칙: <strong>소속 팀 1명</strong> + <strong>다른 팀 1명</strong>`;
-  if (IS_SPECIAL_WEEK) {
+  if(me && me.freeVote){
+    ruleHtml += `규칙: <strong>누구든 2명</strong> 선택 가능 (본인 제외)`;
+  } else {
+    ruleHtml += `규칙: <strong>소속 팀 1명</strong> + <strong>다른 팀 1명</strong> (본인 제외)`;
+  }
+  if(IS_SPECIAL_WEEK && me){
     const wInfo = weekLabel(wk);
     ruleHtml += `<br>현재 라운드: <strong>${wInfo.label}</strong>`;
   }
-  if (voted) ruleHtml += `<span class="ok">✓ 이 라운드 투표 완료</span>`;
+  if(voted) ruleHtml += `<span class="ok">✓ 이 라운드 투표 완료</span>`;
   document.getElementById('ruleBox').innerHTML = ruleHtml;
 
-  // round selector
-  const rswrap = document.getElementById('roundSelWrap');
-  rswrap.style.display = IS_SPECIAL_WEEK ? 'block' : 'none';
-  if (IS_SPECIAL_WEEK) renderRoundBtns();
+  // who box
+  document.getElementById('whoBox').style.display = myId ? 'none' : 'block';
 
-  // team setup vs grid
-  if (!myTeam) {
-    document.getElementById('setupWrap').style.display = 'block';
-    document.getElementById('teamsArea').style.display = 'none';
-    return;
-  }
-  document.getElementById('setupWrap').style.display = 'none';
-  document.getElementById('teamsArea').style.display = 'block';
+  // round sel
+  const rswrap = document.getElementById('roundSelWrap');
+  rswrap.style.display = IS_SPECIAL_WEEK && myId ? 'block' : 'none';
+  if(IS_SPECIAL_WEEK && myId) renderRoundBtns();
+
+  // teams area
+  const ta = document.getElementById('teamsArea');
+  if(!myId){ ta.style.display='none'; return; }
+  ta.style.display='block';
   renderMemberGrid();
   renderPicks();
   updateSbtn();
 }
 
-function renderMemberGrid() {
+function renderMemberGrid(){
+  const me = getMe();
+  if(!me) return;
   const wk = activeWeekKey();
-  const voted = isVoted(cat, wk, IS_SPECIAL_WEEK ? activeRound : 1);
+  const round = IS_SPECIAL_WEEK ? activeRound : 1;
+  const voted = isVoted(cat, wk, round);
+  const isFree = me.freeVote;
+
   const groups = {};
-  MEMBERS.forEach(m => { if (!groups[m.team]) groups[m.team]=[]; groups[m.team].push(m); });
+  MEMBERS.forEach(m=>{ if(!groups[m.team]) groups[m.team]=[]; groups[m.team].push(m); });
+
   const grid = document.getElementById('teamsGrid');
-  grid.innerHTML = '';
-  TEAMS.forEach(t => {
-    if (!groups[t]) return;
+  grid.innerHTML='';
+
+  TEAMS.forEach(t=>{
+    if(!groups[t]) return;
     const card = document.createElement('div');
-    card.className = 'tcard';
-    card.innerHTML = `<div class="thead">마케팅본부 ${t}</div>`;
-    groups[t].forEach(m => {
-      const inMy = t === myTeam;
-      const isSel = m.id===selS || m.id===selO;
-      const cls = 'mrow'
-        +(m.id===selS?' sel-s':m.id===selO?' sel-o':'')
-        +(voted?' dis':'');
+    card.className='tcard';
+    card.innerHTML=`<div class="thead">마케팅본부 ${t}</div>`;
+
+    groups[t].forEach(m=>{
+      const isMe = m.id === myId;
+      const inMyTeam = m.team === me.team;
+      const isSelf = m.id===selS;
+      const isOther = m.id===selO;
+      const isF1 = m.id===selF1;
+      const isF2 = m.id===selF2;
+
+      let cls = 'mrow';
+      if(isMe) cls += ' is-me';
+      else if(isSelf) cls += ' sel-s';
+      else if(isOther) cls += ' sel-o';
+      else if(isF1||isF2) cls += ' sel-f';
+      if(voted||isMe) cls += ' dis';
+
       const row = document.createElement('div');
       row.className = cls;
-      let tag = '';
-      if (m.id===selS) tag = '<span class="sel-tag st-s">소속팀 ✓</span>';
-      if (m.id===selO) tag = '<span class="sel-tag st-o">타팀 ✓</span>';
-      row.innerHTML = `
+
+      let tag='';
+      if(isMe) tag='<span class="me-tag">나</span>';
+      else if(isSelf) tag='<span class="sel-tag st-s">소속팀 ✓</span>';
+      else if(isOther) tag='<span class="sel-tag st-o">타팀 ✓</span>';
+      else if(isF1||isF2) tag='<span class="sel-tag st-f">선택 ✓</span>';
+
+      row.innerHTML=`
         <div class="av ${m.av}">${m.name.slice(-1)}</div>
         <div class="minfo">
-          <div class="mname">${m.name}${tag}</div>
-          <div class="mnick">${m.nick} · ${m.role}</div>
+          <div class="mname-row">
+            <span class="mname">${m.name}</span>
+            <span class="mnick">${m.nick}</span>
+            <span class="mrole">· ${m.role}</span>
+            ${tag}
+          </div>
+          <div class="mmission">${m.mission}</div>
         </div>`;
-      if (!voted) row.onclick = () => {
-        if (inMy) selS = selS===m.id ? null : m.id;
-        else selO = selO===m.id ? null : m.id;
-        renderMemberGrid(); renderPicks(); updateSbtn();
-      };
+
+      if(!voted && !isMe){
+        row.onclick = ()=>{
+          if(isFree){
+            // 자유 2명 선택
+            if(m.id===selF1){ selF1=null; }
+            else if(m.id===selF2){ selF2=null; }
+            else if(!selF1){ selF1=m.id; }
+            else if(!selF2){ selF2=m.id; }
+            else { selF1=selF2; selF2=m.id; }
+          } else {
+            if(inMyTeam){ selS = selS===m.id?null:m.id; }
+            else { selO = selO===m.id?null:m.id; }
+          }
+          renderMemberGrid(); renderPicks(); updateSbtn();
+        };
+      }
       card.appendChild(row);
     });
     grid.appendChild(card);
   });
 }
 
-function renderPicks() {
-  const sm = MEMBERS.find(m=>m.id===selS);
-  const om = MEMBERS.find(m=>m.id===selO);
-  document.getElementById('picksRow').innerHTML =
-    (sm ? `<span class="ppill pp-s">👤 ${sm.name} (${sm.nick}) · 소속팀</span>`
-        : `<span class="ppill pp-e">소속 팀 1명 선택 필요</span>`) +
-    (om ? `<span class="ppill pp-o">👤 ${om.name} (${om.nick}) · 타팀</span>`
-        : `<span class="ppill pp-e">다른 팀 1명 선택 필요</span>`);
+function renderPicks(){
+  const me = getMe();
+  if(!me){ document.getElementById('picksRow').innerHTML=''; return; }
+  const isFree = me.freeVote;
+
+  if(isFree){
+    const m1 = MEMBERS.find(m=>m.id===selF1);
+    const m2 = MEMBERS.find(m=>m.id===selF2);
+    document.getElementById('picksRow').innerHTML=
+      (m1?`<span class="ppill pp-f">👤 ${m1.name} (${m1.nick})</span>`:`<span class="ppill pp-e">1번째 선택 필요</span>`)+
+      (m2?`<span class="ppill pp-f">👤 ${m2.name} (${m2.nick})</span>`:`<span class="ppill pp-e">2번째 선택 필요</span>`);
+  } else {
+    const sm=MEMBERS.find(m=>m.id===selS), om=MEMBERS.find(m=>m.id===selO);
+    document.getElementById('picksRow').innerHTML=
+      (sm?`<span class="ppill pp-s">👤 ${sm.name} (${sm.nick}) · 소속팀</span>`:`<span class="ppill pp-e">소속 팀 1명 선택 필요</span>`)+
+      (om?`<span class="ppill pp-o">👤 ${om.name} (${om.nick}) · 타팀</span>`:`<span class="ppill pp-e">다른 팀 1명 선택 필요</span>`);
+  }
 }
 
-function updateSbtn() {
-  const wk = activeWeekKey();
-  const voted = isVoted(cat, wk, IS_SPECIAL_WEEK ? activeRound : 1);
-  const btn = document.getElementById('sbtn');
-  btn.disabled = !selS || !selO || voted;
-  btn.textContent = voted ? '이 라운드 투표 완료 ✓' : '투표 제출';
+function updateSbtn(){
+  const me=getMe(); if(!me) return;
+  const wk=activeWeekKey(), round=IS_SPECIAL_WEEK?activeRound:1;
+  const voted=isVoted(cat,wk,round);
+  const canVote = me.freeVote ? (selF1&&selF2) : (selS&&selO);
+  const btn=document.getElementById('sbtn');
+  btn.disabled=!canVote||voted;
+  btn.textContent=voted?'이 라운드 투표 완료 ✓':'투표 제출';
 }
 
-/* ═══════════════════════════════════════════
+/* ══════════════════════════════════════
    SUBMIT
-   ═══════════════════════════════════════════ */
-async function submitVote() {
-  if (!selS || !selO) return;
-  const wk = activeWeekKey();
-  const round = IS_SPECIAL_WEEK ? activeRound : 1;
-  const btn = document.getElementById('sbtn');
-  btn.disabled = true; btn.textContent = '제출 중…';
+══════════════════════════════════════ */
+async function submitVote(){
+  const me=getMe(); if(!me) return;
+  const wk=activeWeekKey(), round=IS_SPECIAL_WEEK?activeRound:1;
+  const picks = me.freeVote ? [selF1,selF2] : [selS,selO];
+  if(!picks[0]||!picks[1]) return;
 
-  const payload = {
-    action: 'vote',
-    weekKey: wk,
-    monthKey: monthOfFriday(wk),
-    category: cat,
-    voterTeam: myTeam,
-    voterId: myTeam + '_' + (localStorage.getItem('bb_uid') || genUid()),
-    round,
-    picks: [selS, selO]
+  const btn=document.getElementById('sbtn');
+  btn.disabled=true; btn.textContent='제출 중…';
+
+  const payload={
+    action:'vote', weekKey:wk, monthKey:monthOfFri(wk),
+    category:cat, voterId:myId, voterName:me.name,
+    voterTeam:me.team, round, picks
   };
 
   try {
     await gasCall(payload);
-    markVoted(cat, wk, round);
-    selS = null; selO = null;
+    markVoted(cat,wk,round);
+    selS=null; selO=null; selF1=null; selF2=null;
     showToast('투표 완료! 🎉');
     await fetchResults();
     renderVote();
-  } catch(e) {
+  } catch(e){
     showToast('오류가 발생했어요. 다시 시도해 주세요.');
-    btn.disabled = false; btn.textContent = '투표 제출';
+    btn.disabled=false; btn.textContent='투표 제출';
   }
 }
 
-function genUid() {
-  const u = Math.random().toString(36).slice(2);
-  localStorage.setItem('bb_uid', u);
-  return u;
-}
-
-/* ═══════════════════════════════════════════
-   FETCH RESULTS
-   ═══════════════════════════════════════════ */
-async function fetchResults() {
+/* ══════════════════════════════════════
+   FETCH
+══════════════════════════════════════ */
+async function fetchResults(){
   try {
     const data = await gasCall({
-      action: 'getResults',
-      weekKey: CURR_WEEK,
-      prevWeekKey: PREV_WEEK,
-      monthKey: CURR_MONTH
+      action:'getResults',
+      weekKey:CURR_WEEK, prevWeekKey:PREV_WEEK, monthKey:CURR_MONTH
     });
-    cache = data;
-    if (view==='results' && isAdmin) renderResults();
-    if (view==='monthly' && isAdmin) renderMonthly();
-  } catch(e) { console.log('fetch err', e); }
+    cache=data;
+    if(view==='results'&&isAdmin) renderResults();
+    if(view==='monthly'&&isAdmin) renderMonthly();
+  } catch(e){ console.log('fetch err',e); }
 }
 
-/* ═══════════════════════════════════════════
+/* ══════════════════════════════════════
    RENDER RESULTS (admin only)
-   ═══════════════════════════════════════════ */
-function renderResults() {
-  const el = document.getElementById('resultsContent');
-  if (!isAdmin) {
-    el.innerHTML = `<div class="empty"><span class="ei">🔒</span>투표 결과는 마스터 윤교주만 확인할 수 있어요<br><br><button class="login-btn" onclick="openAdminModal()">관리자 로그인</button></div>`;
+══════════════════════════════════════ */
+function renderResults(){
+  const el=document.getElementById('resultsContent');
+  if(!isAdmin){
+    el.innerHTML=`<div class="locked-box"><div class="locked-icon">🔒</div><div class="locked-title">관리자 전용</div><div class="locked-desc">투표 결과는 마스터 윤교주만 확인할 수 있어요.</div><button class="login-btn" onclick="openAdminModal()">관리자 로그인</button></div>`;
     return;
   }
 
-  // Merge both weeks if special week
-  const weeks = IS_SPECIAL_WEEK ? [PREV_WEEK, CURR_WEEK] : [CURR_WEEK];
-  const merged = {};
-  weeks.forEach(wk => {
-    const wd = (cache.weeks||{})[wk]||{};
-    const catd = wd[cat]||{};
-    Object.entries(catd).forEach(([id,cnt]) => { merged[id]=(merged[id]||0)+cnt; });
+  const weeks = IS_SPECIAL_WEEK ? [PREV_WEEK,CURR_WEEK] : [CURR_WEEK];
+
+  // 합산 득표
+  const merged={};
+  weeks.forEach(wk=>{
+    const wd=(cache.weeks||{})[wk]||{};
+    const catd=wd[cat]||{};
+    Object.entries(catd).forEach(([id,cnt])=>{ merged[id]=(merged[id]||0)+cnt; });
   });
+  const sorted=Object.entries(merged).sort((a,b)=>b[1]-a[1]);
 
-  const sorted = Object.entries(merged).sort((a,b)=>b[1]-a[1]);
-  if (!sorted.length) {
-    el.innerHTML = `<div class="empty"><span class="ei">📊</span>아직 투표 결과가 없습니다</div>`;
-    return;
-  }
-
-  const catLabel = cat==='great'?'이번 주 댓츠그뤠잇':'이번 주 왕촉새';
-  const winner = MEMBERS.find(m=>m.id===sorted[0][0]);
-  const maxV = sorted[0][1];
-  let html = '';
-
-  // Winner card
-  if (winner) html += `
-    <div class="winner-card">
-      <div class="w-trophy">🏆</div>
-      <div>
-        <div class="w-label">${catLabel}</div>
-        <div class="w-name">${winner.name}</div>
-        <div class="w-sub">${winner.nick} · ${sorted[0][1]}표${IS_SPECIAL_WEEK?' (2라운드 합산)':''}</div>
-      </div>
-    </div>`;
-
-  // Totals
-  html += `<div class="sdiv">득표 현황</div>`;
-  sorted.forEach(([id,cnt],i) => {
-    const m = MEMBERS.find(x=>x.id===id); if(!m) return;
-    const pct = Math.round(cnt/maxV*100);
-    const rc = i===0?'rr1':i===1?'rr2':i===2?'rr3':'rrn';
-    html += `<div class="ritem">
-      <div class="rrank ${rc}">${i+1}</div>
-      <div class="av ${m.av}" style="width:28px;height:28px;font-size:11px">${m.name.slice(-1)}</div>
-      <div class="bwrap">
-        <div class="btop">
-          <span class="bname">${m.name}<span class="bnick">${m.nick}</span></span>
-          <span class="bcnt">${cnt}표</span>
-        </div>
-        <div class="bbg"><div class="bfill" style="width:${pct}%"></div></div>
-      </div>
-    </div>`;
+  // 미투표자 계산
+  const votedSet = new Set();
+  weeks.forEach(wk=>{
+    const wd=(cache.weeks||{})[wk]||{};
+    const voters=(wd[cat+'_voters'])||[];
+    voters.forEach(v=>votedSet.add(v));
   });
+  const notVoted = MEMBERS.filter(m=>!votedSet.has(m.id));
 
-  // Per-round detail if special week
-  if (IS_SPECIAL_WEEK) {
-    [PREV_WEEK, CURR_WEEK].forEach((wk, ri) => {
-      const wd = (cache.weeks||{})[wk]||{};
-      const detail = (wd[cat+'_detail'])||{};
-      const winfo = weekLabel(wk);
-      html += `<div class="sdiv">📅 ${ri+1}라운드 상세 (${winfo.label})</div>`;
-      const entries = Object.entries(detail).sort((a,b)=>b[1].count-a[1].count);
-      if (!entries.length) { html += `<div style="font-size:12px;color:var(--g300);margin-bottom:8px">투표 없음</div>`; return; }
-      entries.forEach(([id,info]) => {
-        const m = MEMBERS.find(x=>x.id===id); if(!m) return;
-        html += `<div class="det-box">
-          <div class="det-head">
-            <span class="det-name">${m.name} (${m.nick})</span>
-            <span class="det-cnt">${info.count}표</span>
-          </div>
-          <div class="det-voters">
-            ${(info.voters||[]).map(v=>`<div class="det-voter">• ${v}</div>`).join('')}
-          </div>
-        </div>`;
-      });
-    });
+  let html='';
+
+  // 미투표자
+  if(notVoted.length>0){
+    html+=`<div class="not-voted-box">
+      <div class="nv-title">⚠️ 아직 투표 안 한 인원 (${notVoted.length}명) — 들들 볶을 예정 🔥</div>
+      <div class="nv-pills">${notVoted.map(m=>`<span class="nv-pill">${m.name} (${m.nick})</span>`).join('')}</div>
+    </div>`;
   } else {
-    // Normal week detail
-    const wd = (cache.weeks||{})[CURR_WEEK]||{};
-    const detail = (wd[cat+'_detail'])||{};
-    html += `<div class="sdiv">투표 상세 내역</div>`;
-    const entries = Object.entries(detail).sort((a,b)=>b[1].count-a[1].count);
-    entries.forEach(([id,info]) => {
-      const m = MEMBERS.find(x=>x.id===id); if(!m) return;
-      html += `<div class="det-box">
-        <div class="det-head">
-          <span class="det-name">${m.name} (${m.nick})</span>
-          <span class="det-cnt">${info.count}표</span>
-        </div>
-        <div class="det-voters">
-          ${(info.voters||[]).map(v=>`<div class="det-voter">• ${v}</div>`).join('')}
+    html+=`<div style="background:var(--green-bg);border:1px solid rgba(34,197,94,.3);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--green)">✅ 전원 투표 완료! 반반한 설계자들 멋져요!</div>`;
+  }
+
+  // 우승자
+  if(sorted.length>0){
+    const winner=MEMBERS.find(m=>m.id===sorted[0][0]);
+    const catLabel=cat==='great'?'이번 주 댓츠그뤠잇':'이번 주 왕촉새';
+    if(winner) html+=`<div class="winner-card"><div class="w-trophy">🏆</div><div><div class="w-label">${catLabel}</div><div class="w-name">${winner.name}</div><div class="w-sub">${winner.nick} · ${sorted[0][1]}표${IS_SPECIAL_WEEK?' (전체 합산)':''}</div></div></div>`;
+
+    const maxV=sorted[0][1];
+    html+=`<div class="sdiv">득표 현황</div>`;
+    sorted.forEach(([id,cnt],i)=>{
+      const m=MEMBERS.find(x=>x.id===id); if(!m) return;
+      const pct=Math.round(cnt/maxV*100);
+      const rc=i===0?'rr1':i===1?'rr2':i===2?'rr3':'rrn';
+      html+=`<div class="ritem">
+        <div class="rrank ${rc}">${i+1}</div>
+        <div class="av ${m.av}" style="width:28px;height:28px;font-size:11px">${m.name.slice(-1)}</div>
+        <div class="bwrap">
+          <div class="btop"><span class="bname">${m.name}<span class="bnick">${m.nick}</span></span><span class="bcnt">${cnt}표</span></div>
+          <div class="bbg"><div class="bfill" style="width:${pct}%"></div></div>
         </div>
       </div>`;
     });
+  } else {
+    html+=`<div class="empty"><span class="ei">📊</span>아직 투표 결과가 없습니다</div>`;
   }
 
-  el.innerHTML = html;
+  // 라운드별 상세
+  weeks.forEach((wk,ri)=>{
+    const wd=(cache.weeks||{})[wk]||{};
+    const detail=(wd[cat+'_detail'])||{};
+    const winfo=weekLabel(wk);
+    const roundLabel=IS_SPECIAL_WEEK?`📅 ${ri+1}라운드 상세 (${winfo.label})`:`📅 투표 상세 내역`;
+    html+=`<div class="sdiv">${roundLabel}</div>`;
+    const entries=Object.entries(detail).sort((a,b)=>b[1].count-a[1].count);
+    if(!entries.length){ html+=`<div style="font-size:12px;color:var(--g300);margin-bottom:8px">투표 없음</div>`; return; }
+    entries.forEach(([id,info])=>{
+      const m=MEMBERS.find(x=>x.id===id); if(!m) return;
+      html+=`<div class="det-box">
+        <div class="det-head"><span class="det-name">${m.name} (${m.nick})</span><span class="det-cnt">${info.count}표</span></div>
+        <div class="det-voters">${(info.voters||[]).map(v=>`<div class="det-voter">• <span class="voter-name">${v.name}</span> (${v.team}팀 · ${v.nick})</div>`).join('')}</div>
+      </div>`;
+    });
+  });
+
+  el.innerHTML=html;
 }
 
-/* ═══════════════════════════════════════════
+/* ══════════════════════════════════════
    RENDER MONTHLY (admin only)
-   ═══════════════════════════════════════════ */
-function renderMonthly() {
-  const el = document.getElementById('monthlyContent');
-  if (!isAdmin) {
-    el.innerHTML = `<div class="empty"><span class="ei">🔒</span>월간 집계는 마스터 윤교주만 확인할 수 있어요<br><br><button class="login-btn" onclick="openAdminModal()">관리자 로그인</button></div>`;
+══════════════════════════════════════ */
+function renderMonthly(){
+  const el=document.getElementById('monthlyContent');
+  if(!isAdmin){
+    el.innerHTML=`<div class="locked-box"><div class="locked-icon">🔒</div><div class="locked-title">관리자 전용</div><div class="locked-desc">월간 집계는 마스터 윤교주만 확인할 수 있어요.</div><button class="login-btn" onclick="openAdminModal()">관리자 로그인</button></div>`;
     return;
   }
+  const monthData=(cache.month||{})[cat]||{};
+  const sorted=Object.entries(monthData).sort((a,b)=>b[1]-a[1]);
+  const catLabel=cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
+  const mo=CURR_MONTH.replace('-','년 ')+'월';
 
-  const monthData = (cache.month||{})[cat]||{};
-  const sorted = Object.entries(monthData).sort((a,b)=>b[1]-a[1]);
-  const catLabel = cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
-  const mo = CURR_MONTH.replace('-','년 ')+'월';
+  if(!sorted.length){ el.innerHTML=`<div class="empty"><span class="ei">📅</span>이번 달 데이터가 없습니다</div>`; return; }
 
-  if (!sorted.length) {
-    el.innerHTML = `<div class="empty"><span class="ei">📅</span>이번 달 데이터가 없습니다</div>`;
-    return;
-  }
+  const winner=MEMBERS.find(m=>m.id===sorted[0][0]);
+  let html='';
+  if(winner) html+=`<div class="mwinner"><div class="mwl">🥇 ${mo} ${catLabel} 현재 선두</div><div class="mwn">${winner.name} (${winner.nick})</div><div class="mws">누적 ${sorted[0][1]}표 · ${weekLabel(CURR_WEEK).label} 기준</div></div>`;
 
-  const winner = MEMBERS.find(m=>m.id===sorted[0][0]);
-  let html = '';
-  if (winner) html += `
-    <div class="mwinner-card">
-      <div class="mwl">🥇 ${mo} ${catLabel} 현재 선두</div>
-      <div class="mwn">${winner.name} (${winner.nick})</div>
-      <div class="mws">누적 ${sorted[0][1]}표 · ${weekLabel(CURR_WEEK).label} 기준</div>
-    </div>`;
-
-  html += `<div class="mtable">
+  html+=`<div class="mtable">
     <div class="mth"><span style="min-width:22px">순위</span><span style="flex:1;margin-left:10px">이름</span><span>표</span></div>
     ${sorted.map(([id,pts],i)=>{
       const m=MEMBERS.find(x=>x.id===id); if(!m) return '';
@@ -1010,51 +855,46 @@ function renderMonthly() {
       </div>`;
     }).join('')}
   </div>`;
-
-  el.innerHTML = html;
+  el.innerHTML=html;
 }
 
-/* ═══════════════════════════════════════════
+/* ══════════════════════════════════════
    ADMIN
-   ═══════════════════════════════════════════ */
-function openAdminModal() { document.getElementById('adminModal').classList.add('open'); setTimeout(()=>document.getElementById('adminPw').focus(),100); }
-function closeAdminModal() { document.getElementById('adminModal').classList.remove('open'); document.getElementById('adminErr').style.display='none'; document.getElementById('adminPw').value=''; }
-function checkAdmin() {
-  if (document.getElementById('adminPw').value === ADMIN_PW) {
-    isAdmin = true;
-    closeAdminModal();
-    document.getElementById('adminBadge').className = 'admin-badge authed';
-    document.getElementById('adminBadge').textContent = '👑 마스터윤교주';
+══════════════════════════════════════ */
+function openAdminModal(){ document.getElementById('adminModal').classList.add('open'); setTimeout(()=>document.getElementById('adminPw').focus(),100); }
+function closeAdminModal(){ document.getElementById('adminModal').classList.remove('open'); document.getElementById('adminErr').style.display='none'; document.getElementById('adminPw').value=''; }
+function checkAdmin(){
+  if(document.getElementById('adminPw').value===ADMIN_PW){
+    isAdmin=true; closeAdminModal();
+    document.getElementById('adminBtn').className='admin-btn on';
+    document.getElementById('adminBtn').textContent='👑 마스터윤교주';
     showToast('마스터 로그인 완료 👑');
     renderResults(); renderMonthly();
   } else {
-    document.getElementById('adminErr').style.display = 'block';
+    document.getElementById('adminErr').style.display='block';
   }
 }
 
-/* ═══════════════════════════════════════════
-   GAS CALL (JSONP)
-   ═══════════════════════════════════════════ */
-function gasCall(payload) {
-  return new Promise((resolve, reject) => {
-    const cb = 'bb_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    const sc = document.createElement('script');
-    window[cb] = d => { delete window[cb]; document.body.removeChild(sc); resolve(d); };
-    sc.onerror = () => reject(new Error('network'));
-    sc.src = GAS_URL + '?callback=' + cb + '&payload=' + encodeURIComponent(JSON.stringify(payload));
+/* ══════════════════════════════════════
+   GAS CALL
+══════════════════════════════════════ */
+function gasCall(payload){
+  return new Promise((resolve,reject)=>{
+    const cb='bb_cb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+    const sc=document.createElement('script');
+    window[cb]=d=>{ delete window[cb]; document.body.removeChild(sc); resolve(d); };
+    sc.onerror=()=>reject(new Error('network'));
+    sc.src=GAS_URL+'?callback='+cb+'&payload='+encodeURIComponent(JSON.stringify(payload));
     document.body.appendChild(sc);
-    setTimeout(() => reject(new Error('timeout')), 10000);
+    setTimeout(()=>reject(new Error('timeout')),10000);
   });
 }
 
-/* ═══════════════════════════════════════════
-   TOAST
-   ═══════════════════════════════════════════ */
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast'; t.textContent = msg;
+function showToast(msg){
+  const t=document.createElement('div');
+  t.className='toast'; t.textContent=msg;
   document.body.appendChild(t);
-  setTimeout(()=>t.remove(), 2800);
+  setTimeout(()=>t.remove(),2800);
 }
 </script>
 </body>
