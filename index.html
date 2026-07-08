@@ -407,34 +407,52 @@ const TEAMS = ['본부','1국','1팀','2팀','3팀'];
 
 /* ══════════════════════════════════════
    WEEK / MONTH LOGIC
+   주차키: 해당 주의 월요일 날짜 기준 "YYYY-MM-DD"
+   → 월~일 어느 요일에 투표해도 같은 키로 저장/조회
 ══════════════════════════════════════ */
-function fridayKey(d) {
-  const day = d.getDay();
-  let diff = 5 - day;
-  if (diff < 0) diff += 7;
-  const fri = new Date(d);
-  fri.setDate(d.getDate() + diff);
-  return `${fri.getFullYear()}-${p2(fri.getMonth()+1)}-${p2(fri.getDate())}`;
-}
 function p2(n){ return String(n).padStart(2,'0'); }
-function monthOfFri(key){ return key.slice(0,7); }
-function weekNumInMonth(key){
-  const fri=new Date(key), y=fri.getFullYear(), m=fri.getMonth();
-  const first=new Date(y,m,1);
-  const firstFriDate=((5-first.getDay())+7)%7+1;
-  return Math.floor((fri.getDate()-firstFriDate)/7)+1;
+
+// 해당 날짜가 속한 주의 월요일 날짜를 키로 사용
+function weekKey(d) {
+  const day = d.getDay(); // 0=일,1=월,...,6=토
+  const diffToMon = day === 0 ? -6 : 1 - day; // 이번 주 월요일까지 차이
+  const mon = new Date(d);
+  mon.setDate(d.getDate() + diffToMon);
+  return `${mon.getFullYear()}-${p2(mon.getMonth()+1)}-${p2(mon.getDate())}`;
 }
-function weekLabel(key){
-  const fri=new Date(key), mon=new Date(fri);
-  mon.setDate(fri.getDate()-4);
-  const f=d=>`${d.getMonth()+1}/${d.getDate()}`;
-  return { label:`${fri.getMonth()+1}월 ${weekNumInMonth(key)}주차`, range:`${f(mon)} – ${f(fri)}` };
+
+// 해당 주의 금요일 날짜 계산 (표시용)
+function fridayOfWeek(monKey) {
+  const mon = new Date(monKey);
+  const fri = new Date(mon);
+  fri.setDate(mon.getDate() + 4);
+  return fri;
+}
+
+function monthOfWeek(key){ return key.slice(0,7); }
+
+function weekNumInMonth(monKey){
+  const mon = new Date(monKey);
+  const y = mon.getFullYear(), m = mon.getMonth();
+  const firstDay = new Date(y, m, 1);
+  const firstMonDate = firstDay.getDay() === 0 ? 2 : (firstDay.getDay() === 1 ? 1 : 9 - firstDay.getDay());
+  return Math.floor((mon.getDate() - firstMonDate) / 7) + 1;
+}
+
+function weekLabel(monKey){
+  const mon = new Date(monKey);
+  const fri = fridayOfWeek(monKey);
+  const f = d => `${d.getMonth()+1}/${d.getDate()}`;
+  const mo = fri.getMonth()+1;
+  const wn = weekNumInMonth(monKey);
+  return { label:`${mo}월 ${wn}주차`, range:`${f(mon)} – ${f(fri)}` };
 }
 
 const TODAY      = new Date();
-const CURR_WEEK  = fridayKey(TODAY);
-const CURR_MONTH = monthOfFri(CURR_WEEK);
-const PREV_WEEK  = (()=>{ const d=new Date(TODAY); d.setDate(d.getDate()-7); return fridayKey(d); })();
+const CURR_WEEK  = weekKey(TODAY);
+const CURR_MONTH = monthOfWeek(CURR_WEEK);
+// 특별주간: 이전 주 = 7일 전 날짜의 주차키
+const PREV_WEEK  = (()=>{ const d=new Date(TODAY); d.setDate(d.getDate()-7); return weekKey(d); })();
 
 /* ══════════════════════════════════════
    STATE
@@ -702,7 +720,7 @@ async function submitVote(){
   btn.disabled=true; btn.textContent='제출 중…';
 
   const payload={
-    action:'vote', weekKey:wk, monthKey:monthOfFri(wk),
+    action:'vote', weekKey:wk, monthKey:monthOfWeek(wk),
     category:cat, voterId:myId, voterName:me.name,
     voterTeam:me.team, round, picks
   };
