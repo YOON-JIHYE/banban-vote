@@ -432,11 +432,15 @@ function fridayOfWeek(monKey) {
 function monthOfWeek(key){ return key.slice(0,7); }
 
 function weekNumInMonth(monKey){
-  const mon = new Date(monKey);
-  const y = mon.getFullYear(), m = mon.getMonth();
+  // 금요일 기준으로 몇 주차인지 계산
+  const fri = fridayOfWeek(monKey);
+  const y = fri.getFullYear(), m = fri.getMonth();
   const firstDay = new Date(y, m, 1);
-  const firstMonDate = firstDay.getDay() === 0 ? 2 : (firstDay.getDay() === 1 ? 1 : 9 - firstDay.getDay());
-  return Math.floor((mon.getDate() - firstMonDate) / 7) + 1;
+  // 이 달 첫 번째 금요일
+  let firstFri = 5 - firstDay.getDay();
+  if (firstFri <= 0) firstFri += 7;
+  const firstFriDate = firstFri + 1;
+  return Math.floor((fri.getDate() - firstFriDate) / 7) + 1;
 }
 
 function weekLabel(monKey){
@@ -465,7 +469,7 @@ let selS        = null, selO = null, selF1 = null, selF2 = null;
 let activeRound = IS_SPECIAL_WEEK ? 1 : 0;
 let cache       = { weeks:{}, month:{} };
 
-function activeWeekKey(){ return IS_SPECIAL_WEEK ? (activeRound===1?PREV_WEEK:CURR_WEEK) : CURR_WEEK; }
+function activeWeekKey(){ return CURR_WEEK; }
 
 function votedKey(c,wk,r){ return `bb_v_${c}_${wk}_r${r}`; }
 function isVoted(c,wk,r){ return localStorage.getItem(votedKey(c,wk,r))==='1'; }
@@ -553,7 +557,7 @@ function renderRoundBtns(){
   if(!IS_SPECIAL_WEEK) return;
   [1,2].forEach(r=>{
     const btn=document.getElementById('rbtn-r'+r);
-    const wk=r===1?PREV_WEEK:CURR_WEEK;
+    const wk=CURR_WEEK;
     if(isVoted(cat,wk,r)) btn.className='rselbtn done';
     else btn.className='rselbtn'+(activeRound===r?' on':'');
   });
@@ -745,7 +749,7 @@ async function fetchResults(){
   try {
     const data = await gasCall({
       action:'getResults',
-      weekKey:CURR_WEEK, prevWeekKey:PREV_WEEK, monthKey:CURR_MONTH
+      weekKey:CURR_WEEK, prevWeekKey:CURR_WEEK, monthKey:CURR_MONTH
     });
     cache=data;
     if(view==='results'&&isAdmin) renderResults();
@@ -763,7 +767,7 @@ function renderResults(){
     return;
   }
 
-  const weeks = IS_SPECIAL_WEEK ? [PREV_WEEK,CURR_WEEK] : [CURR_WEEK];
+  const weeks = [CURR_WEEK];
 
   // 합산 득표
   const merged={};
