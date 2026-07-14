@@ -351,7 +351,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 ══════════════════════════════════════ */
 const GAS_URL       = 'https://script.google.com/macros/s/AKfycbyUG_Q8V9OdfMN28GkGq_r5eMyLWFJNaDe9dLk67whqxoD2zhktbX9pK7Xo7AaiBMoA1Q/exec'; // ← 교체
 const ADMIN_PW      = 'banban2026';                 // ← 변경
-const IS_SPECIAL_WEEK = true; // 특별 2회 투표 주간이면 true, 아니면 false
+const IS_SPECIAL_WEEK = false; // 특별 2회 투표 주간 종료
+
+// 라운드 시작 기준 주차 (7월 1주차 = 1라운드)
+// 이 날짜는 7월 1주차의 월요일 날짜
+const ROUND_BASE_DATE = '2026-06-29'; // 7월 1주차 월요일
+
+// 현재 라운드 번호 자동 계산
+function calcRoundNum(wk) {
+  const base = new Date(ROUND_BASE_DATE);
+  const curr = new Date(wk);
+  const diffDays = Math.round((curr - base) / (1000 * 60 * 60 * 24));
+  return Math.floor(diffDays / 7) + 1;
+}
 
 /* ══════════════════════════════════════
    MEMBERS
@@ -749,7 +761,9 @@ async function fetchResults(){
   try {
     const data = await gasCall({
       action:'getResults',
-      weekKey:CURR_WEEK, prevWeekKey:CURR_WEEK, monthKey:CURR_MONTH
+      weekKey:CURR_WEEK,
+      monthKey:CURR_MONTH,
+      getAllHistory: true  // 전체 히스토리 요청
     });
     cache=data;
     if(view==='results'&&isAdmin) renderResults();
@@ -767,47 +781,44 @@ function renderResults(){
     return;
   }
 
-  const weeks = [CURR_WEEK];
+  const allWeeks = cache.weeks || {};
+  const currWd = allWeeks[CURR_WEEK] || {};
+  let html = '';
 
-  // 합산 득표
-  const merged={};
-  weeks.forEach(wk=>{
-    const wd=(cache.weeks||{})[wk]||{};
-    const catd=wd[cat]||{};
-    Object.entries(catd).forEach(([id,cnt])=>{ merged[id]=(merged[id]||0)+cnt; });
-  });
-  const sorted=Object.entries(merged).sort((a,b)=>b[1]-a[1]);
-
-  // 미투표자 계산
-  const votedSet = new Set();
-  weeks.forEach(wk=>{
-    const wd=(cache.weeks||{})[wk]||{};
-    const voters=(wd[cat+'_voters'])||[];
-    voters.forEach(v=>votedSet.add(v));
-  });
+  // ── 이번 주 미투표자 ──
+  const votedSet = new Set((currWd[cat+'_voters']) || []);
   const notVoted = MEMBERS.filter(m=>!votedSet.has(m.id));
-
-  let html='';
-
-  // 미투표자
   if(notVoted.length>0){
     html+=`<div class="not-voted-box">
-      <div class="nv-title">⚠️ 아직 투표 안 한 인원 (${notVoted.length}명) — 들들 볶을 예정 🔥</div>
+      <div class="nv-title">⚠️ ${weekLabel(CURR_WEEK).label} 미투표 (${notVoted.length}명) — 들들 볶을 예정 🔥</div>
       <div class="nv-pills">${notVoted.map(m=>`<span class="nv-pill">${m.name} (${m.nick})</span>`).join('')}</div>
     </div>`;
   } else {
-    html+=`<div style="background:var(--green-bg);border:1px solid rgba(34,197,94,.3);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--green)">✅ 전원 투표 완료! 반반한 설계자들 멋져요!</div>`;
+    html+=`<div style="background:var(--green-bg);border:1px solid rgba(34,197,94,.3);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--green)">✅ 이번 주 전원 투표 완료! 반반한 설계자들 멋져요!</div>`;
   }
 
-  // 우승자
-  if(sorted.length>0){
-    const winner=MEMBERS.find(m=>m.id===sorted[0][0]);
-    const catLabel=cat==='great'?'이번 주 댓츠그뤠잇':'이번 주 왕촉새';
-    if(winner) html+=`<div class="winner-card"><div class="w-trophy">🏆</div><div><div class="w-label">${catLabel}</div><div class="w-name">${winner.name}</div><div class="w-sub">${winner.nick} · ${sorted[0][1]}표${IS_SPECIAL_WEEK?' (전체 합산)':''}</div></div></div>`;
+  // ── 이번 주 득표 현황 ──
+  const currCat = currWd[cat] || {};
+  const currSorted = Object.entries(currCat).sort((a,b)=>b[1]-a[1]);
+  const currRound = calcRoundNum(CURR_WEEK);
+  const wInfo = weekLabel(CURR_WEEK);
 
-    const maxV=sorted[0][1];
-    html+=`<div class="sdiv">득표 현황</div>`;
-    sorted.forEach(([id,cnt],i)=>{
+  html += `<div class="sdiv">🏆 ${currRound}라운드 (${wInfo.label}) 득표 현황</div>`;
+
+  if(currSorted.length > 0){
+    const winner = MEMBERS.find(m=>m.id===currSorted[0][0]);
+    if(winner){
+      html+=`<div class="winner-card">
+        <div class="w-trophy">🏆</div>
+        <div>
+          <div class="w-label">${currRound}라운드 ${cat==='great'?'댓츠그뤠잇':'왕촉새'}</div>
+          <div class="w-name">${winner.name}</div>
+          <div class="w-sub">${winner.nick} · ${currSorted[0][1]}표</div>
+        </div>
+      </div>`;
+    }
+    const maxV = currSorted[0][1];
+    currSorted.forEach(([id,cnt],i)=>{
       const m=MEMBERS.find(x=>x.id===id); if(!m) return;
       const pct=Math.round(cnt/maxV*100);
       const rc=i===0?'rr1':i===1?'rr2':i===2?'rr3':'rrn';
@@ -824,23 +835,64 @@ function renderResults(){
     html+=`<div class="empty"><span class="ei">📊</span>아직 투표 결과가 없습니다</div>`;
   }
 
-  // 라운드별 상세
-  weeks.forEach((wk,ri)=>{
-    const wd=(cache.weeks||{})[wk]||{};
-    const detail=(wd[cat+'_detail'])||{};
-    const winfo=weekLabel(wk);
-    const roundLabel=IS_SPECIAL_WEEK?`📅 ${ri+1}라운드 상세 (${winfo.label})`:`📅 투표 상세 내역`;
-    html+=`<div class="sdiv">${roundLabel}</div>`;
-    const entries=Object.entries(detail).sort((a,b)=>b[1].count-a[1].count);
-    if(!entries.length){ html+=`<div style="font-size:12px;color:var(--g300);margin-bottom:8px">투표 없음</div>`; return; }
-    entries.forEach(([id,info])=>{
+  // ── 이번 주 투표 상세 ──
+  const currDetail = currWd[cat+'_detail'] || {};
+  const detEntries = Object.entries(currDetail).sort((a,b)=>b[1].count-a[1].count);
+  html += `<div class="sdiv">📋 ${currRound}라운드 투표 상세 내역</div>`;
+  if(detEntries.length){
+    detEntries.forEach(([id,info])=>{
       const m=MEMBERS.find(x=>x.id===id); if(!m) return;
       html+=`<div class="det-box">
         <div class="det-head"><span class="det-name">${m.name} (${m.nick})</span><span class="det-cnt">${info.count}표</span></div>
-        <div class="det-voters">${(info.voters||[]).map(v=>`<div class="det-voter">• <span class="voter-name">${v.name}</span> (${v.team}팀 · ${v.nick})</div>`).join('')}</div>
+        <div class="det-voters">${(info.voters||[]).map(v=>`<div class="det-voter">• <span class="voter-name">${v.name}</span> (${v.team}팀 · ${v.nick||''})</div>`).join('')}</div>
       </div>`;
     });
-  });
+  } else {
+    html+=`<div style="font-size:12px;color:var(--g300);margin-bottom:8px">투표 없음</div>`;
+  }
+
+  // ── 전체 라운드 히스토리 ──
+  const sortedWeeks = Object.keys(allWeeks).sort();
+  if(sortedWeeks.length > 0){
+    html += `<div class="sdiv">📅 전체 라운드 히스토리</div>`;
+    // 과거 주차 역순으로 표시
+    [...sortedWeeks].reverse().forEach(wk=>{
+      const wd = allWeeks[wk] || {};
+      const catd = wd[cat] || {};
+      const roundNum = calcRoundNum(wk);
+      const wl = weekLabel(wk);
+      const wkSorted = Object.entries(catd).sort((a,b)=>b[1]-a[1]);
+      const isCurr = wk === CURR_WEEK;
+
+      html+=`<div style="background:var(--navy-mid);border:1px solid ${isCurr?'rgba(200,150,12,.4)':'rgba(255,255,255,.07)'};border-radius:var(--r-md);margin-bottom:10px;overflow:hidden;">
+        <div style="padding:9px 14px;background:${isCurr?'rgba(200,150,12,.12)':'rgba(255,255,255,.03)'};border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;font-weight:700;color:${isCurr?'var(--gold-lt)':'var(--white)'}">
+            ${roundNum}라운드 ${isCurr?'🔴 현재':''}
+          </span>
+          <span style="font-size:11px;color:var(--g300)">${wl.label} · ${wl.range}</span>
+        </div>`;
+
+      if(wkSorted.length){
+        const wkMax = wkSorted[0][1];
+        wkSorted.slice(0,3).forEach(([id,cnt],i)=>{
+          const m=MEMBERS.find(x=>x.id===id); if(!m) return;
+          const pct=Math.round(cnt/wkMax*100);
+          const medal = i===0?'🥇':i===1?'🥈':'🥉';
+          html+=`<div style="padding:7px 14px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;">
+            <span style="font-size:14px">${medal}</span>
+            <span style="font-size:12px;color:var(--white);flex:1">${m.name} <span style="color:var(--g300);font-size:10px">${m.nick}</span></span>
+            <span style="font-size:12px;font-weight:700;color:var(--gold-lt)">${cnt}표</span>
+          </div>`;
+        });
+        if(wkSorted.length > 3){
+          html+=`<div style="padding:6px 14px;font-size:11px;color:var(--g300)">외 ${wkSorted.length-3}명</div>`;
+        }
+      } else {
+        html+=`<div style="padding:10px 14px;font-size:12px;color:var(--g300)">투표 없음</div>`;
+      }
+      html+=`</div>`;
+    });
+  }
 
   el.innerHTML=html;
 }
