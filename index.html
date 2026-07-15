@@ -857,46 +857,73 @@ function renderResults(){
   const sortedWeeks = Object.keys(allWeeks).sort();
   if(sortedWeeks.length > 0){
     html += `<div class="sdiv">📅 전체 라운드 히스토리</div>`;
-    // 과거 주차 역순으로 표시
     [...sortedWeeks].reverse().forEach(wk=>{
       const wd = allWeeks[wk] || {};
       const catd = wd[cat] || {};
+      const detail = wd[cat+'_detail'] || {};
       const roundNum = calcRoundNum(wk);
       const wl = weekLabel(wk);
       const wkSorted = Object.entries(catd).sort((a,b)=>b[1]-a[1]);
       const isCurr = wk === CURR_WEEK;
+      const uid = 'hist_'+wk.replace(/-/g,'');
 
       html+=`<div style="background:var(--navy-mid);border:1px solid ${isCurr?'rgba(200,150,12,.4)':'rgba(255,255,255,.07)'};border-radius:var(--r-md);margin-bottom:10px;overflow:hidden;">
-        <div style="padding:9px 14px;background:${isCurr?'rgba(200,150,12,.12)':'rgba(255,255,255,.03)'};border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center;">
+        <div onclick="toggleHist('${uid}')" style="padding:9px 14px;background:${isCurr?'rgba(200,150,12,.12)':'rgba(255,255,255,.03)'};border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
           <span style="font-size:13px;font-weight:700;color:${isCurr?'var(--gold-lt)':'var(--white)'}">
             ${roundNum}라운드 ${isCurr?'🔴 현재':''}
           </span>
-          <span style="font-size:11px;color:var(--g300)">${wl.label} · ${wl.range}</span>
-        </div>`;
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:var(--g300)">${wl.label} · ${wl.range}</span>
+            <span id="${uid}_arrow" style="font-size:11px;color:var(--g300)">▼</span>
+          </span>
+        </div>
+
+        <div id="${uid}">`;
 
       if(wkSorted.length){
-        const wkMax = wkSorted[0][1];
-        wkSorted.slice(0,3).forEach(([id,cnt],i)=>{
+        // 득표 순위 (공동순위 포함)
+        let hRank=1;
+        wkSorted.forEach(([id,cnt],i)=>{
           const m=MEMBERS.find(x=>x.id===id); if(!m) return;
-          const pct=Math.round(cnt/wkMax*100);
-          const medal = i===0?'🥇':i===1?'🥈':'🥉';
+          if(i>0 && cnt<wkSorted[i-1][1]) hRank=i+1;
+          const isTie=wkSorted.filter(([,c])=>c===cnt).length>1;
+          const rl=isTie?hRank+'위 공동':hRank+'위';
+          const medal=hRank===1?'🥇':hRank===2?'🥈':hRank===3?'🥉':'';
           html+=`<div style="padding:7px 14px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;">
-            <span style="font-size:14px">${medal}</span>
+            <span style="font-size:12px;color:var(--g300);min-width:50px">${medal} ${rl}</span>
             <span style="font-size:12px;color:var(--white);flex:1">${m.name} <span style="color:var(--g300);font-size:10px">${m.nick}</span></span>
             <span style="font-size:12px;font-weight:700;color:var(--gold-lt)">${cnt}표</span>
           </div>`;
         });
-        if(wkSorted.length > 3){
-          html+=`<div style="padding:6px 14px;font-size:11px;color:var(--g300)">외 ${wkSorted.length-3}명</div>`;
+
+        // 상세 내역 (누가 누구를 투표했는지)
+        const detEntries = Object.entries(detail).sort((a,b)=>b[1].count-a[1].count);
+        if(detEntries.length){
+          html+=`<div style="padding:8px 14px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;border-top:1px solid rgba(200,150,12,.2);margin-top:2px;">투표 상세 내역</div>`;
+          detEntries.forEach(([id,info])=>{
+            const m=MEMBERS.find(x=>x.id===id); if(!m) return;
+            html+=`<div style="padding:5px 14px 8px;">
+              <div style="font-size:12px;font-weight:600;color:var(--white);margin-bottom:3px">${m.name} (${m.nick}) · ${info.count}표</div>
+              ${(info.voters||[]).map(v=>`<div style="font-size:11px;color:var(--g300);padding-left:8px">• ${v.name} (${v.team}팀${v.nick?` · ${v.nick}`:''})</div>`).join('')}
+            </div>`;
+          });
         }
       } else {
         html+=`<div style="padding:10px 14px;font-size:12px;color:var(--g300)">투표 없음</div>`;
       }
-      html+=`</div>`;
+      html+=`</div></div>`;
     });
   }
 
   el.innerHTML=html;
+
+  // 현재 주차는 기본 펼침, 나머지는 접힘
+  sortedWeeks.forEach(wk=>{
+    const uid='hist_'+wk.replace(/-/g,'');
+    const el2=document.getElementById(uid);
+    const arrow=document.getElementById(uid+'_arrow');
+    if(el2 && wk!==CURR_WEEK){ el2.style.display='none'; if(arrow) arrow.textContent='▶'; }
+  });
 }
 
 /* ══════════════════════════════════════
@@ -970,6 +997,15 @@ function gasCall(payload){
     document.body.appendChild(sc);
     setTimeout(()=>reject(new Error('timeout')),10000);
   });
+}
+
+function toggleHist(uid){
+  const el=document.getElementById(uid);
+  const arrow=document.getElementById(uid+'_arrow');
+  if(!el) return;
+  const isOpen=el.style.display!=='none';
+  el.style.display=isOpen?'none':'block';
+  if(arrow) arrow.textContent=isOpen?'▶':'▼';
 }
 
 function showToast(msg){
