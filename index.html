@@ -502,11 +502,12 @@ window.onload = () => {
 
 function renderWeekBanner(){
   const info = weekLabel(CURR_WEEK);
-  document.getElementById('wbWeek').textContent = info.label + ' 투표';
+  const roundNum = calcRoundNum(CURR_WEEK);
+  document.getElementById('wbWeek').textContent = `${roundNum}라운드 · ${info.label}`;
   document.getElementById('wbRange').textContent = info.range;
   const badge = document.getElementById('wbBadge');
-  if(IS_SPECIAL_WEEK){ badge.textContent='⚡ 2회 투표 주간'; badge.className='wb-badge sp'; }
-  else { badge.textContent=`${TODAY.getMonth()+1}월`; badge.className='wb-badge'; }
+  badge.textContent = `${TODAY.getMonth()+1}월`;
+  badge.className = 'wb-badge';
 }
 
 /* ══════════════════════════════════════
@@ -581,7 +582,7 @@ function renderRoundBtns(){
 function renderVote(){
   const me = getMe();
   const wk = activeWeekKey();
-  const round = IS_SPECIAL_WEEK ? activeRound : 1;
+  const round = calcRoundNum(wk);
   const voted = me && isVoted(cat, wk, round);
   const catLabel = cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
   const catDesc  = cat==='great'?'임무를 잘 수행한 동료':'스몰토크와 소통을 많이 한 동료';
@@ -592,20 +593,16 @@ function renderVote(){
   } else {
     ruleHtml += `규칙: <strong>소속 팀 1명</strong> + <strong>다른 팀 1명</strong> (본인 제외)`;
   }
-  if(IS_SPECIAL_WEEK && me){
-    const wInfo = weekLabel(wk);
-    ruleHtml += `<br>현재 라운드: <strong>${wInfo.label}</strong>`;
-  }
-  if(voted) ruleHtml += `<span class="ok">✓ 이 라운드 투표 완료</span>`;
+  ruleHtml += `<br>현재: <strong>${round}라운드 · ${weekLabel(wk).label}</strong>`;
+  if(voted) ruleHtml += `<span class="ok">✓ 이번 주 투표 완료</span>`;
   document.getElementById('ruleBox').innerHTML = ruleHtml;
 
   // who box
   document.getElementById('whoBox').style.display = myId ? 'none' : 'block';
 
-  // round sel
+  // round sel (특별주간 아니므로 숨김)
   const rswrap = document.getElementById('roundSelWrap');
-  rswrap.style.display = IS_SPECIAL_WEEK && myId ? 'block' : 'none';
-  if(IS_SPECIAL_WEEK && myId) renderRoundBtns();
+  rswrap.style.display = 'none';
 
   // teams area
   const ta = document.getElementById('teamsArea');
@@ -620,7 +617,7 @@ function renderMemberGrid(){
   const me = getMe();
   if(!me) return;
   const wk = activeWeekKey();
-  const round = IS_SPECIAL_WEEK ? activeRound : 1;
+  const round = calcRoundNum(wk);
   const voted = isVoted(cat, wk, round);
   const isFree = me.freeVote;
 
@@ -715,12 +712,12 @@ function renderPicks(){
 
 function updateSbtn(){
   const me=getMe(); if(!me) return;
-  const wk=activeWeekKey(), round=IS_SPECIAL_WEEK?activeRound:1;
+  const wk=activeWeekKey(), round=calcRoundNum(wk);
   const voted=isVoted(cat,wk,round);
   const canVote = me.freeVote ? (selF1&&selF2) : (selS&&selO);
   const btn=document.getElementById('sbtn');
   btn.disabled=!canVote||voted;
-  btn.textContent=voted?'이 라운드 투표 완료 ✓':'투표 제출';
+  btn.textContent=voted?'이번 주 투표 완료 ✓':'투표 제출';
 }
 
 /* ══════════════════════════════════════
@@ -728,7 +725,8 @@ function updateSbtn(){
 ══════════════════════════════════════ */
 async function submitVote(){
   const me=getMe(); if(!me) return;
-  const wk=activeWeekKey(), round=IS_SPECIAL_WEEK?activeRound:1;
+  const wk=activeWeekKey();
+  const round=calcRoundNum(wk); // 라운드 자동 계산
   const picks = me.freeVote ? [selF1,selF2] : [selS,selO];
   if(!picks[0]||!picks[1]) return;
 
@@ -818,12 +816,16 @@ function renderResults(){
       </div>`;
     }
     const maxV = currSorted[0][1];
+    let rank = 1;
     currSorted.forEach(([id,cnt],i)=>{
       const m=MEMBERS.find(x=>x.id===id); if(!m) return;
+      if(i > 0 && cnt < currSorted[i-1][1]) rank = i + 1;
       const pct=Math.round(cnt/maxV*100);
-      const rc=i===0?'rr1':i===1?'rr2':i===2?'rr3':'rrn';
+      const rc=rank===1?'rr1':rank===2?'rr2':rank===3?'rr3':'rrn';
+      const isTie = currSorted.filter(([,c])=>c===cnt).length > 1;
+      const rankLabel = isTie ? rank+'위 공동' : rank+'위';
       html+=`<div class="ritem">
-        <div class="rrank ${rc}">${i+1}</div>
+        <div class="rrank ${rc}" style="font-size:12px">${rankLabel}</div>
         <div class="av ${m.av}" style="width:28px;height:28px;font-size:11px">${m.name.slice(-1)}</div>
         <div class="bwrap">
           <div class="btop"><span class="bname">${m.name}<span class="bnick">${m.nick}</span></span><span class="bcnt">${cnt}표</span></div>
@@ -919,15 +921,21 @@ function renderMonthly(){
 
   html+=`<div class="mtable">
     <div class="mth"><span style="min-width:22px">순위</span><span style="flex:1;margin-left:10px">이름</span><span>표</span></div>
-    ${sorted.map(([id,pts],i)=>{
-      const m=MEMBERS.find(x=>x.id===id); if(!m) return '';
-      return `<div class="mtr">
-        <span class="mtr-rank">${i+1}</span>
+    ${(()=>{
+      let mRank=1;
+      return sorted.map(([id,pts],i)=>{
+        const m=MEMBERS.find(x=>x.id===id); if(!m) return '';
+        if(i>0 && pts<sorted[i-1][1]) mRank=i+1;
+        const isTie=sorted.filter(([,p])=>p===pts).length>1;
+        const rl=isTie?mRank+'위 공동':mRank+'위';
+        return `<div class="mtr">
+        <span class="mtr-rank" style="font-size:10px">${rl}</span>
         <div class="av ${m.av}" style="width:24px;height:24px;font-size:10px">${m.name.slice(-1)}</div>
         <span class="mtr-name">${m.name}<span class="mtr-nick">${m.nick}</span></span>
         <span class="mtr-pts">${pts}표</span>
       </div>`;
-    }).join('')}
+      }).join('');
+    })()}
   </div>`;
   el.innerHTML=html;
 }
