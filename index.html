@@ -351,19 +351,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 ══════════════════════════════════════ */
 const GAS_URL       = 'https://script.google.com/macros/s/AKfycbyUG_Q8V9OdfMN28GkGq_r5eMyLWFJNaDe9dLk67whqxoD2zhktbX9pK7Xo7AaiBMoA1Q/exec'; // ← 교체
 const ADMIN_PW      = 'banban2026';                 // ← 변경
-const IS_SPECIAL_WEEK = false; // 특별 2회 투표 주간 종료
-
-// 라운드 시작 기준 주차 (7월 1주차 = 1라운드)
-// 이 날짜는 7월 1주차의 월요일 날짜
-const ROUND_BASE_DATE = '2026-06-29'; // 7월 1주차 월요일
-
-// 현재 라운드 번호 자동 계산
-function calcRoundNum(wk) {
-  const base = new Date(ROUND_BASE_DATE);
-  const curr = new Date(wk);
-  const diffDays = Math.round((curr - base) / (1000 * 60 * 60 * 24));
-  return Math.floor(diffDays / 7) + 1;
-}
+const IS_SPECIAL_WEEK = true; // 특별 2회 투표 주간이면 true, 아니면 false
 
 /* ══════════════════════════════════════
    MEMBERS
@@ -419,56 +407,34 @@ const TEAMS = ['본부','1국','1팀','2팀','3팀'];
 
 /* ══════════════════════════════════════
    WEEK / MONTH LOGIC
-   주차키: 해당 주의 월요일 날짜 기준 "YYYY-MM-DD"
-   → 월~일 어느 요일에 투표해도 같은 키로 저장/조회
 ══════════════════════════════════════ */
+function fridayKey(d) {
+  const day = d.getDay();
+  let diff = 5 - day;
+  if (diff < 0) diff += 7;
+  const fri = new Date(d);
+  fri.setDate(d.getDate() + diff);
+  return `${fri.getFullYear()}-${p2(fri.getMonth()+1)}-${p2(fri.getDate())}`;
+}
 function p2(n){ return String(n).padStart(2,'0'); }
-
-// 해당 날짜가 속한 주의 월요일 날짜를 키로 사용
-function weekKey(d) {
-  const day = d.getDay(); // 0=일,1=월,...,6=토
-  const diffToMon = day === 0 ? -6 : 1 - day; // 이번 주 월요일까지 차이
-  const mon = new Date(d);
-  mon.setDate(d.getDate() + diffToMon);
-  return `${mon.getFullYear()}-${p2(mon.getMonth()+1)}-${p2(mon.getDate())}`;
+function monthOfFri(key){ return key.slice(0,7); }
+function weekNumInMonth(key){
+  const fri=new Date(key), y=fri.getFullYear(), m=fri.getMonth();
+  const first=new Date(y,m,1);
+  const firstFriDate=((5-first.getDay())+7)%7+1;
+  return Math.floor((fri.getDate()-firstFriDate)/7)+1;
 }
-
-// 해당 주의 금요일 날짜 계산 (표시용)
-function fridayOfWeek(monKey) {
-  const mon = new Date(monKey);
-  const fri = new Date(mon);
-  fri.setDate(mon.getDate() + 4);
-  return fri;
-}
-
-function monthOfWeek(key){ return key.slice(0,7); }
-
-function weekNumInMonth(monKey){
-  // 금요일 기준으로 몇 주차인지 계산
-  const fri = fridayOfWeek(monKey);
-  const y = fri.getFullYear(), m = fri.getMonth();
-  const firstDay = new Date(y, m, 1);
-  // 이 달 첫 번째 금요일
-  let firstFri = 5 - firstDay.getDay();
-  if (firstFri <= 0) firstFri += 7;
-  const firstFriDate = firstFri + 1;
-  return Math.floor((fri.getDate() - firstFriDate) / 7) + 1;
-}
-
-function weekLabel(monKey){
-  const mon = new Date(monKey);
-  const fri = fridayOfWeek(monKey);
-  const f = d => `${d.getMonth()+1}/${d.getDate()}`;
-  const mo = fri.getMonth()+1;
-  const wn = weekNumInMonth(monKey);
-  return { label:`${mo}월 ${wn}주차`, range:`${f(mon)} – ${f(fri)}` };
+function weekLabel(key){
+  const fri=new Date(key), mon=new Date(fri);
+  mon.setDate(fri.getDate()-4);
+  const f=d=>`${d.getMonth()+1}/${d.getDate()}`;
+  return { label:`${fri.getMonth()+1}월 ${weekNumInMonth(key)}주차`, range:`${f(mon)} – ${f(fri)}` };
 }
 
 const TODAY      = new Date();
-const CURR_WEEK  = weekKey(TODAY);
-const CURR_MONTH = monthOfWeek(CURR_WEEK);
-// 특별주간: 이전 주 = 7일 전 날짜의 주차키
-const PREV_WEEK  = (()=>{ const d=new Date(TODAY); d.setDate(d.getDate()-7); return weekKey(d); })();
+const CURR_WEEK  = fridayKey(TODAY);
+const CURR_MONTH = monthOfFri(CURR_WEEK);
+const PREV_WEEK  = (()=>{ const d=new Date(TODAY); d.setDate(d.getDate()-7); return fridayKey(d); })();
 
 /* ══════════════════════════════════════
    STATE
@@ -481,7 +447,7 @@ let selS        = null, selO = null, selF1 = null, selF2 = null;
 let activeRound = IS_SPECIAL_WEEK ? 1 : 0;
 let cache       = { weeks:{}, month:{} };
 
-function activeWeekKey(){ return CURR_WEEK; }
+function activeWeekKey(){ return IS_SPECIAL_WEEK ? (activeRound===1?PREV_WEEK:CURR_WEEK) : CURR_WEEK; }
 
 function votedKey(c,wk,r){ return `bb_v_${c}_${wk}_r${r}`; }
 function isVoted(c,wk,r){ return localStorage.getItem(votedKey(c,wk,r))==='1'; }
@@ -502,12 +468,11 @@ window.onload = () => {
 
 function renderWeekBanner(){
   const info = weekLabel(CURR_WEEK);
-  const roundNum = calcRoundNum(CURR_WEEK);
-  document.getElementById('wbWeek').textContent = `${roundNum}라운드 · ${info.label}`;
+  document.getElementById('wbWeek').textContent = info.label + ' 투표';
   document.getElementById('wbRange').textContent = info.range;
   const badge = document.getElementById('wbBadge');
-  badge.textContent = `${TODAY.getMonth()+1}월`;
-  badge.className = 'wb-badge';
+  if(IS_SPECIAL_WEEK){ badge.textContent='⚡ 2회 투표 주간'; badge.className='wb-badge sp'; }
+  else { badge.textContent=`${TODAY.getMonth()+1}월`; badge.className='wb-badge'; }
 }
 
 /* ══════════════════════════════════════
@@ -570,7 +535,7 @@ function renderRoundBtns(){
   if(!IS_SPECIAL_WEEK) return;
   [1,2].forEach(r=>{
     const btn=document.getElementById('rbtn-r'+r);
-    const wk=CURR_WEEK;
+    const wk=r===1?PREV_WEEK:CURR_WEEK;
     if(isVoted(cat,wk,r)) btn.className='rselbtn done';
     else btn.className='rselbtn'+(activeRound===r?' on':'');
   });
@@ -582,7 +547,7 @@ function renderRoundBtns(){
 function renderVote(){
   const me = getMe();
   const wk = activeWeekKey();
-  const round = calcRoundNum(wk);
+  const round = IS_SPECIAL_WEEK ? activeRound : 1;
   const voted = me && isVoted(cat, wk, round);
   const catLabel = cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
   const catDesc  = cat==='great'?'임무를 잘 수행한 동료':'스몰토크와 소통을 많이 한 동료';
@@ -593,16 +558,20 @@ function renderVote(){
   } else {
     ruleHtml += `규칙: <strong>소속 팀 1명</strong> + <strong>다른 팀 1명</strong> (본인 제외)`;
   }
-  ruleHtml += `<br>현재: <strong>${round}라운드 · ${weekLabel(wk).label}</strong>`;
-  if(voted) ruleHtml += `<span class="ok">✓ 이번 주 투표 완료</span>`;
+  if(IS_SPECIAL_WEEK && me){
+    const wInfo = weekLabel(wk);
+    ruleHtml += `<br>현재 라운드: <strong>${wInfo.label}</strong>`;
+  }
+  if(voted) ruleHtml += `<span class="ok">✓ 이 라운드 투표 완료</span>`;
   document.getElementById('ruleBox').innerHTML = ruleHtml;
 
   // who box
   document.getElementById('whoBox').style.display = myId ? 'none' : 'block';
 
-  // round sel (특별주간 아니므로 숨김)
+  // round sel
   const rswrap = document.getElementById('roundSelWrap');
-  rswrap.style.display = 'none';
+  rswrap.style.display = IS_SPECIAL_WEEK && myId ? 'block' : 'none';
+  if(IS_SPECIAL_WEEK && myId) renderRoundBtns();
 
   // teams area
   const ta = document.getElementById('teamsArea');
@@ -617,7 +586,7 @@ function renderMemberGrid(){
   const me = getMe();
   if(!me) return;
   const wk = activeWeekKey();
-  const round = calcRoundNum(wk);
+  const round = IS_SPECIAL_WEEK ? activeRound : 1;
   const voted = isVoted(cat, wk, round);
   const isFree = me.freeVote;
 
@@ -712,12 +681,12 @@ function renderPicks(){
 
 function updateSbtn(){
   const me=getMe(); if(!me) return;
-  const wk=activeWeekKey(), round=calcRoundNum(wk);
+  const wk=activeWeekKey(), round=IS_SPECIAL_WEEK?activeRound:1;
   const voted=isVoted(cat,wk,round);
   const canVote = me.freeVote ? (selF1&&selF2) : (selS&&selO);
   const btn=document.getElementById('sbtn');
   btn.disabled=!canVote||voted;
-  btn.textContent=voted?'이번 주 투표 완료 ✓':'투표 제출';
+  btn.textContent=voted?'이 라운드 투표 완료 ✓':'투표 제출';
 }
 
 /* ══════════════════════════════════════
@@ -725,8 +694,7 @@ function updateSbtn(){
 ══════════════════════════════════════ */
 async function submitVote(){
   const me=getMe(); if(!me) return;
-  const wk=activeWeekKey();
-  const round=calcRoundNum(wk); // 라운드 자동 계산
+  const wk=activeWeekKey(), round=IS_SPECIAL_WEEK?activeRound:1;
   const picks = me.freeVote ? [selF1,selF2] : [selS,selO];
   if(!picks[0]||!picks[1]) return;
 
@@ -734,7 +702,7 @@ async function submitVote(){
   btn.disabled=true; btn.textContent='제출 중…';
 
   const payload={
-    action:'vote', weekKey:wk, monthKey:monthOfWeek(wk),
+    action:'vote', weekKey:wk, monthKey:monthOfFri(wk),
     category:cat, voterId:myId, voterName:me.name,
     voterTeam:me.team, round, picks
   };
@@ -761,7 +729,7 @@ async function fetchResults(){
       action:'getResults',
       weekKey:CURR_WEEK,
       monthKey:CURR_MONTH,
-      getAllHistory: true  // 전체 히스토리 요청
+      getAllHistory: true
     });
     cache=data;
     if(view==='results'&&isAdmin) renderResults();
@@ -779,53 +747,52 @@ function renderResults(){
     return;
   }
 
-  const allWeeks = cache.weeks || {};
-  const currWd = allWeeks[CURR_WEEK] || {};
-  let html = '';
+  const weeks = IS_SPECIAL_WEEK ? [PREV_WEEK,CURR_WEEK] : [CURR_WEEK];
 
-  // ── 이번 주 미투표자 ──
-  const votedSet = new Set((currWd[cat+'_voters']) || []);
+  // 합산 득표
+  const merged={};
+  weeks.forEach(wk=>{
+    const wd=(cache.weeks||{})[wk]||{};
+    const catd=wd[cat]||{};
+    Object.entries(catd).forEach(([id,cnt])=>{ merged[id]=(merged[id]||0)+cnt; });
+  });
+  const sorted=Object.entries(merged).sort((a,b)=>b[1]-a[1]);
+
+  // 미투표자 계산
+  const votedSet = new Set();
+  weeks.forEach(wk=>{
+    const wd=(cache.weeks||{})[wk]||{};
+    const voters=(wd[cat+'_voters'])||[];
+    voters.forEach(v=>votedSet.add(v));
+  });
   const notVoted = MEMBERS.filter(m=>!votedSet.has(m.id));
+
+  let html='';
+
+  // 미투표자
   if(notVoted.length>0){
     html+=`<div class="not-voted-box">
-      <div class="nv-title">⚠️ ${weekLabel(CURR_WEEK).label} 미투표 (${notVoted.length}명) — 들들 볶을 예정 🔥</div>
+      <div class="nv-title">⚠️ 아직 투표 안 한 인원 (${notVoted.length}명) — 들들 볶을 예정 🔥</div>
       <div class="nv-pills">${notVoted.map(m=>`<span class="nv-pill">${m.name} (${m.nick})</span>`).join('')}</div>
     </div>`;
   } else {
-    html+=`<div style="background:var(--green-bg);border:1px solid rgba(34,197,94,.3);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--green)">✅ 이번 주 전원 투표 완료! 반반한 설계자들 멋져요!</div>`;
+    html+=`<div style="background:var(--green-bg);border:1px solid rgba(34,197,94,.3);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--green)">✅ 전원 투표 완료! 반반한 설계자들 멋져요!</div>`;
   }
 
-  // ── 이번 주 득표 현황 ──
-  const currCat = currWd[cat] || {};
-  const currSorted = Object.entries(currCat).sort((a,b)=>b[1]-a[1]);
-  const currRound = calcRoundNum(CURR_WEEK);
-  const wInfo = weekLabel(CURR_WEEK);
+  // 우승자
+  if(sorted.length>0){
+    const winner=MEMBERS.find(m=>m.id===sorted[0][0]);
+    const catLabel=cat==='great'?'이번 주 댓츠그뤠잇':'이번 주 왕촉새';
+    if(winner) html+=`<div class="winner-card"><div class="w-trophy">🏆</div><div><div class="w-label">${catLabel}</div><div class="w-name">${winner.name}</div><div class="w-sub">${winner.nick} · ${sorted[0][1]}표${IS_SPECIAL_WEEK?' (전체 합산)':''}</div></div></div>`;
 
-  html += `<div class="sdiv">🏆 ${currRound}라운드 (${wInfo.label}) 득표 현황</div>`;
-
-  if(currSorted.length > 0){
-    const winner = MEMBERS.find(m=>m.id===currSorted[0][0]);
-    if(winner){
-      html+=`<div class="winner-card">
-        <div class="w-trophy">🏆</div>
-        <div>
-          <div class="w-label">${currRound}라운드 ${cat==='great'?'댓츠그뤠잇':'왕촉새'}</div>
-          <div class="w-name">${winner.name}</div>
-          <div class="w-sub">${winner.nick} · ${currSorted[0][1]}표</div>
-        </div>
-      </div>`;
-    }
-    const maxV = currSorted[0][1];
-    let rank = 1;
-    currSorted.forEach(([id,cnt],i)=>{
+    const maxV=sorted[0][1];
+    html+=`<div class="sdiv">득표 현황</div>`;
+    sorted.forEach(([id,cnt],i)=>{
       const m=MEMBERS.find(x=>x.id===id); if(!m) return;
-      if(i > 0 && cnt < currSorted[i-1][1]) rank = i + 1;
       const pct=Math.round(cnt/maxV*100);
-      const rc=rank===1?'rr1':rank===2?'rr2':rank===3?'rr3':'rrn';
-      const isTie = currSorted.filter(([,c])=>c===cnt).length > 1;
-      const rankLabel = isTie ? rank+'위 공동' : rank+'위';
+      const rc=i===0?'rr1':i===1?'rr2':i===2?'rr3':'rrn';
       html+=`<div class="ritem">
-        <div class="rrank ${rc}" style="font-size:12px">${rankLabel}</div>
+        <div class="rrank ${rc}">${i+1}</div>
         <div class="av ${m.av}" style="width:28px;height:28px;font-size:11px">${m.name.slice(-1)}</div>
         <div class="bwrap">
           <div class="btop"><span class="bname">${m.name}<span class="bnick">${m.nick}</span></span><span class="bcnt">${cnt}표</span></div>
@@ -837,93 +804,25 @@ function renderResults(){
     html+=`<div class="empty"><span class="ei">📊</span>아직 투표 결과가 없습니다</div>`;
   }
 
-  // ── 이번 주 투표 상세 ──
-  const currDetail = currWd[cat+'_detail'] || {};
-  const detEntries = Object.entries(currDetail).sort((a,b)=>b[1].count-a[1].count);
-  html += `<div class="sdiv">📋 ${currRound}라운드 투표 상세 내역</div>`;
-  if(detEntries.length){
-    detEntries.forEach(([id,info])=>{
+  // 라운드별 상세
+  weeks.forEach((wk,ri)=>{
+    const wd=(cache.weeks||{})[wk]||{};
+    const detail=(wd[cat+'_detail'])||{};
+    const winfo=weekLabel(wk);
+    const roundLabel=IS_SPECIAL_WEEK?`📅 ${ri+1}라운드 상세 (${winfo.label})`:`📅 투표 상세 내역`;
+    html+=`<div class="sdiv">${roundLabel}</div>`;
+    const entries=Object.entries(detail).sort((a,b)=>b[1].count-a[1].count);
+    if(!entries.length){ html+=`<div style="font-size:12px;color:var(--g300);margin-bottom:8px">투표 없음</div>`; return; }
+    entries.forEach(([id,info])=>{
       const m=MEMBERS.find(x=>x.id===id); if(!m) return;
       html+=`<div class="det-box">
         <div class="det-head"><span class="det-name">${m.name} (${m.nick})</span><span class="det-cnt">${info.count}표</span></div>
-        <div class="det-voters">${(info.voters||[]).map(v=>`<div class="det-voter">• <span class="voter-name">${v.name}</span> (${v.team}팀 · ${v.nick||''})</div>`).join('')}</div>
+        <div class="det-voters">${(info.voters||[]).map(v=>`<div class="det-voter">• <span class="voter-name">${v.name}</span> (${v.team}팀 · ${v.nick})</div>`).join('')}</div>
       </div>`;
     });
-  } else {
-    html+=`<div style="font-size:12px;color:var(--g300);margin-bottom:8px">투표 없음</div>`;
-  }
-
-  // ── 전체 라운드 히스토리 ──
-  const sortedWeeks = Object.keys(allWeeks).sort();
-  if(sortedWeeks.length > 0){
-    html += `<div class="sdiv">📅 전체 라운드 히스토리</div>`;
-    [...sortedWeeks].reverse().forEach(wk=>{
-      const wd = allWeeks[wk] || {};
-      const catd = wd[cat] || {};
-      const detail = wd[cat+'_detail'] || {};
-      const roundNum = calcRoundNum(wk);
-      const wl = weekLabel(wk);
-      const wkSorted = Object.entries(catd).sort((a,b)=>b[1]-a[1]);
-      const isCurr = wk === CURR_WEEK;
-      const uid = 'hist_'+wk.replace(/-/g,'');
-
-      html+=`<div style="background:var(--navy-mid);border:1px solid ${isCurr?'rgba(200,150,12,.4)':'rgba(255,255,255,.07)'};border-radius:var(--r-md);margin-bottom:10px;overflow:hidden;">
-        <div onclick="toggleHist('${uid}')" style="padding:9px 14px;background:${isCurr?'rgba(200,150,12,.12)':'rgba(255,255,255,.03)'};border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
-          <span style="font-size:13px;font-weight:700;color:${isCurr?'var(--gold-lt)':'var(--white)'}">
-            ${roundNum}라운드 ${isCurr?'🔴 현재':''}
-          </span>
-          <span style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:11px;color:var(--g300)">${wl.label} · ${wl.range}</span>
-            <span id="${uid}_arrow" style="font-size:11px;color:var(--g300)">▼</span>
-          </span>
-        </div>
-
-        <div id="${uid}">`;
-
-      if(wkSorted.length){
-        // 득표 순위 (공동순위 포함)
-        let hRank=1;
-        wkSorted.forEach(([id,cnt],i)=>{
-          const m=MEMBERS.find(x=>x.id===id); if(!m) return;
-          if(i>0 && cnt<wkSorted[i-1][1]) hRank=i+1;
-          const isTie=wkSorted.filter(([,c])=>c===cnt).length>1;
-          const rl=isTie?hRank+'위 공동':hRank+'위';
-          const medal=hRank===1?'🥇':hRank===2?'🥈':hRank===3?'🥉':'';
-          html+=`<div style="padding:7px 14px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;">
-            <span style="font-size:12px;color:var(--g300);min-width:50px">${medal} ${rl}</span>
-            <span style="font-size:12px;color:var(--white);flex:1">${m.name} <span style="color:var(--g300);font-size:10px">${m.nick}</span></span>
-            <span style="font-size:12px;font-weight:700;color:var(--gold-lt)">${cnt}표</span>
-          </div>`;
-        });
-
-        // 상세 내역 (누가 누구를 투표했는지)
-        const detEntries = Object.entries(detail).sort((a,b)=>b[1].count-a[1].count);
-        if(detEntries.length){
-          html+=`<div style="padding:8px 14px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;border-top:1px solid rgba(200,150,12,.2);margin-top:2px;">투표 상세 내역</div>`;
-          detEntries.forEach(([id,info])=>{
-            const m=MEMBERS.find(x=>x.id===id); if(!m) return;
-            html+=`<div style="padding:5px 14px 8px;">
-              <div style="font-size:12px;font-weight:600;color:var(--white);margin-bottom:3px">${m.name} (${m.nick}) · ${info.count}표</div>
-              ${(info.voters||[]).map(v=>`<div style="font-size:11px;color:var(--g300);padding-left:8px">• ${v.name} (${v.team}팀${v.nick?` · ${v.nick}`:''})</div>`).join('')}
-            </div>`;
-          });
-        }
-      } else {
-        html+=`<div style="padding:10px 14px;font-size:12px;color:var(--g300)">투표 없음</div>`;
-      }
-      html+=`</div></div>`;
-    });
-  }
+  });
 
   el.innerHTML=html;
-
-  // 현재 주차는 기본 펼침, 나머지는 접힘
-  sortedWeeks.forEach(wk=>{
-    const uid='hist_'+wk.replace(/-/g,'');
-    const el2=document.getElementById(uid);
-    const arrow=document.getElementById(uid+'_arrow');
-    if(el2 && wk!==CURR_WEEK){ el2.style.display='none'; if(arrow) arrow.textContent='▶'; }
-  });
 }
 
 /* ══════════════════════════════════════
@@ -935,35 +834,74 @@ function renderMonthly(){
     el.innerHTML=`<div class="locked-box"><div class="locked-icon">🔒</div><div class="locked-title">관리자 전용</div><div class="locked-desc">월간 집계는 마스터 윤교주만 확인할 수 있어요.</div><button class="login-btn" onclick="openAdminModal()">관리자 로그인</button></div>`;
     return;
   }
-  const monthData=(cache.month||{})[cat]||{};
-  const sorted=Object.entries(monthData).sort((a,b)=>b[1]-a[1]);
-  const catLabel=cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
-  const mo=CURR_MONTH.replace('-','년 ')+'월';
 
-  if(!sorted.length){ el.innerHTML=`<div class="empty"><span class="ei">📅</span>이번 달 데이터가 없습니다</div>`; return; }
+  const allMonths = cache.months || {};
+  const catLabel = cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
 
-  const winner=MEMBERS.find(m=>m.id===sorted[0][0]);
+  // 월 목록 (내림차순)
+  const monthKeys = Object.keys(allMonths).sort().reverse();
+
+  if(!monthKeys.length){
+    el.innerHTML=`<div class="empty"><span class="ei">📅</span>월간 데이터가 없습니다</div>`;
+    return;
+  }
+
   let html='';
-  if(winner) html+=`<div class="mwinner"><div class="mwl">🥇 ${mo} ${catLabel} 현재 선두</div><div class="mwn">${winner.name} (${winner.nick})</div><div class="mws">누적 ${sorted[0][1]}표 · ${weekLabel(CURR_WEEK).label} 기준</div></div>`;
 
-  html+=`<div class="mtable">
-    <div class="mth"><span style="min-width:22px">순위</span><span style="flex:1;margin-left:10px">이름</span><span>표</span></div>
-    ${(()=>{
+  monthKeys.forEach((mo, mi) => {
+    const monthData = (allMonths[mo]||{})[cat] || {};
+    const sorted = Object.entries(monthData).sort((a,b)=>b[1]-a[1]);
+    const isCurr = mo === CURR_MONTH;
+    const moLabel = mo.replace('-','년 ')+'월';
+    const uid = 'month_'+mo.replace('-','');
+
+    // 이번 달 우승자 배너
+    if(sorted.length > 0){
+      const winner = MEMBERS.find(m=>m.id===sorted[0][0]);
+      if(winner){
+        html+=`<div class="mwinner" style="${isCurr?'':'opacity:0.85'}">
+          <div class="mwl">${isCurr?'🔴 진행 중 · ':'🏆 '} ${moLabel} ${catLabel} ${isCurr?'현재 선두':'최종 우승'}</div>
+          <div class="mwn">${winner.name} (${winner.nick})</div>
+          <div class="mws">누적 ${sorted[0][1]}표${isCurr?' · 진행 중':''}</div>
+        </div>`;
+      }
+    }
+
+    // 월별 접이식 카드
+    html+=`<div style="background:var(--navy-mid);border:1px solid ${isCurr?'rgba(200,150,12,.4)':'rgba(255,255,255,.07)'};border-radius:var(--r-lg);margin-bottom:12px;overflow:hidden;">
+      <div onclick="toggleHist('${uid}')" style="padding:11px 16px;background:${isCurr?'rgba(200,150,12,.1)':'rgba(255,255,255,.03)'};display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+        <span style="font-size:14px;font-weight:700;color:${isCurr?'var(--gold-lt)':'var(--white)'}">${moLabel} ${isCurr?'🔴':'✅'}</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--g300)">${sorted.length}명 투표</span>
+          <span id="${uid}_arrow" style="font-size:11px;color:var(--g300)">${isCurr?'▼':'▶'}</span>
+        </span>
+      </div>
+      <div id="${uid}" style="display:${isCurr?'block':'none'}">`;
+
+    if(sorted.length){
+      html+=`<div style="padding:0;">`;
       let mRank=1;
-      return sorted.map(([id,pts],i)=>{
-        const m=MEMBERS.find(x=>x.id===id); if(!m) return '';
+      sorted.forEach(([id,pts],i)=>{
+        const m=MEMBERS.find(x=>x.id===id); if(!m) return;
         if(i>0 && pts<sorted[i-1][1]) mRank=i+1;
         const isTie=sorted.filter(([,p])=>p===pts).length>1;
         const rl=isTie?mRank+'위 공동':mRank+'위';
-        return `<div class="mtr">
-        <span class="mtr-rank" style="font-size:10px">${rl}</span>
-        <div class="av ${m.av}" style="width:24px;height:24px;font-size:10px">${m.name.slice(-1)}</div>
-        <span class="mtr-name">${m.name}<span class="mtr-nick">${m.nick}</span></span>
-        <span class="mtr-pts">${pts}표</span>
-      </div>`;
-      }).join('');
-    })()}
-  </div>`;
+        const medal=mRank===1?'🥇':mRank===2?'🥈':mRank===3?'🥉':'';
+        html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,.04);">
+          <span style="font-size:11px;color:var(--g300);min-width:55px">${medal} ${rl}</span>
+          <div class="av ${m.av}" style="width:26px;height:26px;font-size:10px">${m.name.slice(-1)}</div>
+          <span style="flex:1;font-size:13px;color:var(--white)">${m.name} <span style="font-size:10px;color:var(--g300)">${m.nick}</span></span>
+          <span style="font-size:13px;font-weight:700;padding:2px 12px;border-radius:20px;background:var(--gold-pale);color:var(--gold-lt)">${pts}표</span>
+        </div>`;
+      });
+      html+=`</div>`;
+    } else {
+      html+=`<div style="padding:14px 16px;font-size:12px;color:var(--g300)">이달 투표 없음</div>`;
+    }
+
+    html+=`</div></div>`;
+  });
+
   el.innerHTML=html;
 }
 
@@ -997,15 +935,6 @@ function gasCall(payload){
     document.body.appendChild(sc);
     setTimeout(()=>reject(new Error('timeout')),10000);
   });
-}
-
-function toggleHist(uid){
-  const el=document.getElementById(uid);
-  const arrow=document.getElementById(uid+'_arrow');
-  if(!el) return;
-  const isOpen=el.style.display!=='none';
-  el.style.display=isOpen?'none':'block';
-  if(arrow) arrow.textContent=isOpen?'▶':'▼';
 }
 
 function showToast(msg){
