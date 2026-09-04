@@ -384,19 +384,19 @@ const MEMBERS = [
     mission:'조용하지만 재빠르게 필요한 데이터와 인사이트 추출 및 구조화', av:'av-g' },
   { id:'kim_j',  name:'김주은',   nick:'공주은',   team:'1팀',  role:'사원',   freeVote:false,
     mission:'여리지만 강하게 주어진 업무를 해내고 팀 내 데이터 체계화에 집중', av:'av-b' },
-  { id:'kang',   name:'강지은',   nick:'다람쥐은', team:'1팀',  role:'사원',   freeVote:false,
+  { id:'kang_a', name:'강지은A',  nick:'다람쥐은', team:'1팀',  role:'사원',   freeVote:false,
     mission:'재빠르게 업무를 수행하고 다음 열매(신규 영업)를 모니터링', av:'av-t' },
+  { id:'kang_b', name:'강지은B',  nick:'비비총',   team:'1팀',  role:'사원',   freeVote:false,
+    mission:'빠르고 정확하게 업무를 겨냥하여 처리하는 역할', av:'av-p' },
   // 2팀
   { id:'lee',    name:'이상미',   nick:'티쳐리',   team:'2팀',  role:'팀장',   freeVote:false,
     mission:'조직원들에게 맞춤형 눈높이 선생님 역할을 하며 원활한 업무 수행이 가능하도록 육성', av:'av-r' },
   { id:'seo',    name:'서무구',   nick:'구구박사', team:'2팀',  role:'선임',   freeVote:false,
     mission:'어떤 일이던 척척 해내며 척척박사의 면모를 조직원들에게 전파', av:'av-b' },
-  { id:'song_s', name:'송시하',   nick:'예삐',     team:'2팀',  role:'주임',   freeVote:false,
-    mission:'대내외적으로 해피한 분위기와 결과물을 예쁘게 완성시키는 역할', av:'av-p' },
   { id:'sim',    name:'심규영',   nick:'뀨도사',   team:'2팀',  role:'주임',   freeVote:false,
     mission:'내공 있는 깊은 분석력으로 전략을 설계하고 실행 결과 전파', av:'av-t' },
-  { id:'noh_h',  name:'노하은',   nick:'꼼꼬미',   team:'2팀',  role:'주임',   freeVote:false,
-    mission:'꼼꼼함을 무기로 데이터 및 자료의 오류를 방지하고 신뢰를 완성시키는 역할', av:'av-g' },
+  { id:'kim_ig', name:'김인구',   nick:'꿀성대',   team:'2팀',  role:'사원',   freeVote:false,
+    mission:'꿀 바른듯한 보이스와 워딩으로 소통하며 업무를 처리하는 역할', av:'av-g' },
   // 3팀
   { id:'noh_e',  name:'노을아래', nick:'노을센세', team:'3팀',  role:'팀장',   freeVote:false,
     mission:'차가운 카리스마로 조직원들의 대내외적 올곧은 에티튜드의 가이드 역할', av:'av-r' },
@@ -408,8 +408,8 @@ const MEMBERS = [
     mission:'빠르고 정확한 실무 역량 스킬을 전파하고 시너지를 만들어내는 역할', av:'av-g' },
   { id:'yoon_s', name:'윤소혜',   nick:'백병아리', team:'3팀',  role:'주임',   freeVote:false,
     mission:'귀여운 겉모습 속에 강단 있고 뚝심있는 실무 스킬을 아이템의 밑거름으로 전환', av:'av-b' },
-  { id:'lim_m',  name:'임문영',   nick:'도요주',   team:'3팀',  role:'주임',   freeVote:false,
-    mission:'도라에몽 요술 주머니 같이 모든 준비 되어있는 데이터 만능꾼으로서 인사이트 업데이트', av:'av-t' },
+  { id:'jang_s', name:'장성우',   nick:'얼리버드', team:'3팀',  role:'사원',   freeVote:false,
+    mission:'일찍 일어난 새처럼 빠르게 업무를 시작하며 실무를 습득해 적용하는 역할', av:'av-r' },
 ];
 const TEAMS = ['본부','1국','1팀','2팀','3팀'];
 
@@ -476,10 +476,11 @@ window.onload = () => {
 
 function renderWeekBanner(){
   const info = weekLabel(CURR_WEEK);
-  const roundNum = calcRoundNum(CURR_WEEK);
-  document.getElementById('wbWeek').textContent = roundNum+'라운드 · '+info.label;
+  
   document.getElementById('wbRange').textContent = info.range;
   const badge = document.getElementById('wbBadge');
+  const roundNum = calcRoundNum(CURR_WEEK);
+  document.getElementById('wbWeek').textContent = roundNum+'라운드 · '+info.label;
   badge.textContent = TODAY.getMonth()+1+'월';
   badge.className='wb-badge';
 }
@@ -733,9 +734,7 @@ async function fetchResults(){
   try {
     const data = await gasCall({
       action:'getResults',
-      weekKey:CURR_WEEK,
-      monthKey:CURR_MONTH,
-      getAllHistory:true
+      weekKey:CURR_WEEK, monthKey:CURR_MONTH, getAllHistory:true
     });
     cache=data;
     if(view==='results'&&isAdmin) renderResults();
@@ -756,10 +755,9 @@ function renderResults(){
   const allWeeks = cache.weeks || {};
   const currWd = allWeeks[CURR_WEEK] || {};
   const currRound = calcRoundNum(CURR_WEEK);
-  const wInfo = weekLabel(CURR_WEEK);
   let html = '';
 
-  // ── 이번 주 미투표자 ──
+  // 이번 주 미투표자
   const votedSet = new Set((currWd[cat+'_voters'])||[]);
   const notVoted = MEMBERS.filter(m=>!votedSet.has(m.id));
   if(notVoted.length>0){
@@ -771,9 +769,8 @@ function renderResults(){
     html+=`<div style="background:var(--green-bg);border:1px solid rgba(34,197,94,.3);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--green)">✅ ${currRound}라운드 전원 투표 완료!</div>`;
   }
 
-  // ── 전체 라운드 히스토리 ──
+  // 전체 라운드 히스토리
   const sortedWeeks = Object.keys(allWeeks).sort().reverse();
-
   if(!sortedWeeks.length){
     html+=`<div class="empty"><span class="ei">📊</span>아직 투표 결과가 없습니다</div>`;
     el.innerHTML=html; return;
@@ -804,9 +801,7 @@ function renderResults(){
       <div id="${uid}" style="display:${isCurr?'block':'none'}">`;
 
     if(wkSorted.length){
-      // 득표 순위 (공동순위)
       let rank=1;
-      html+=`<div style="padding:6px 0 2px;">`;
       wkSorted.forEach(([id,cnt],i)=>{
         const m=MEMBERS.find(x=>x.id===id); if(!m) return;
         if(i>0&&cnt<wkSorted[i-1][1]) rank=i+1;
@@ -820,9 +815,7 @@ function renderResults(){
           <span style="font-size:12px;font-weight:700;color:var(--gold-lt)">${cnt}표</span>
         </div>`;
       });
-      html+=`</div>`;
 
-      // 투표 상세 (누가 누구에게)
       const detEntries=Object.entries(detail).sort((a,b)=>b[1].count-a[1].count);
       if(detEntries.length){
         html+=`<div style="padding:7px 14px 3px;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;border-top:1px solid rgba(200,150,12,.2);">투표 상세 내역</div>`;
@@ -843,6 +836,7 @@ function renderResults(){
   el.innerHTML=html;
 }
 
+
 /* ══════════════════════════════════════
    RENDER MONTHLY (admin only)
 ══════════════════════════════════════ */
@@ -852,9 +846,7 @@ function renderMonthly(){
     el.innerHTML=`<div class="locked-box"><div class="locked-icon">🔒</div><div class="locked-title">관리자 전용</div><div class="locked-desc">월간 집계는 마스터 윤교주만 확인할 수 있어요.</div><button class="login-btn" onclick="openAdminModal()">관리자 로그인</button></div>`;
     return;
   }
-
   const catLabel = cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
-
   // weeks 데이터에서 월별 합산
   const allMonths = {};
   Object.entries(cache.weeks||{}).forEach(([wk,wd])=>{
@@ -866,34 +858,18 @@ function renderMonthly(){
       allMonths[mo][cat][id]=(allMonths[mo][cat][id]||0)+cnt;
     });
   });
-
-  // cache.months 있으면 덮어쓰기
-  if(cache.months){
-    Object.entries(cache.months).forEach(([mo,md])=>{
-      if(!allMonths[mo]) allMonths[mo]={};
-      Object.entries(md).forEach(([c,data])=>{
-        allMonths[mo][c]=data;
-      });
-    });
-  }
-
   const monthKeys = Object.keys(allMonths).sort().reverse();
-
   if(!monthKeys.length){
     el.innerHTML=`<div class="empty"><span class="ei">📅</span>월간 데이터가 없습니다</div>`;
     return;
   }
-
   let html='';
-
   monthKeys.forEach(mo=>{
     const monthData=(allMonths[mo]||{})[cat]||{};
     const sorted=Object.entries(monthData).sort((a,b)=>b[1]-a[1]);
     const isCurr = mo===CURR_MONTH;
     const moLabel=mo.replace('-','년 ')+'월';
     const uid='month_'+mo.replace('-','');
-
-    // 우승자 배너
     if(sorted.length>0){
       const winner=MEMBERS.find(m=>m.id===sorted[0][0]);
       if(winner){
@@ -904,8 +880,6 @@ function renderMonthly(){
         </div>`;
       }
     }
-
-    // 접이식 카드 (전체 순위)
     html+=`<div style="background:var(--navy-mid);border:1px solid ${isCurr?'rgba(200,150,12,.4)':'rgba(255,255,255,.1)'};border-radius:var(--r-lg);margin-bottom:12px;overflow:hidden;">
       <div onclick="toggleHist('${uid}')" style="padding:11px 16px;background:${isCurr?'rgba(200,150,12,.1)':'rgba(255,255,255,.03)'};display:flex;justify-content:space-between;align-items:center;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);">
         <span style="font-size:14px;font-weight:700;color:${isCurr?'var(--gold-lt)':'var(--white)'}">${moLabel} ${isCurr?'🔴':'✅'}</span>
@@ -915,7 +889,6 @@ function renderMonthly(){
         </span>
       </div>
       <div id="${uid}" style="display:${isCurr?'block':'none'}">`;
-
     if(sorted.length){
       let mRank=1;
       sorted.forEach(([id,pts],i)=>{
@@ -936,9 +909,9 @@ function renderMonthly(){
     }
     html+=`</div></div>`;
   });
-
   el.innerHTML=html;
 }
+
 
 /* ══════════════════════════════════════
    ADMIN
