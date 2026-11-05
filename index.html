@@ -815,8 +815,9 @@ function renderResults(){
       let rank=1;
       wkSorted.forEach(([id,cnt],i)=>{
         const m=MEMBERS.find(x=>x.id===id); if(!m) return;
-        if(i>0&&cnt<wkSorted[i-1][1]) rank=i+1;
-        const isTie=wkSorted.filter(([,c])=>c===cnt).length>1;
+        rank = wkSorted.filter(([,c])=>c>cnt).length + 1;
+        const sameCount=wkSorted.filter(([,c])=>c===cnt).length;
+        const isTie=sameCount>1;
         const rl=isTie?rank+'위 공동':rank+'위';
         const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
         html+=`<div style="display:flex;align-items:center;gap:9px;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,.04);">
@@ -894,8 +895,9 @@ function renderMonthly(){
       let mRank=1;
       sorted.forEach(([id,pts],i)=>{
         const m=MEMBERS.find(x=>x.id===id); if(!m) return;
-        if(i>0&&pts<sorted[i-1][1]) mRank=i+1;
-        const isTie=sorted.filter(([,p])=>p===pts).length>1;
+        mRank = sorted.filter(([,p])=>p>pts).length + 1;
+        const sameCount=sorted.filter(([,p])=>p===pts).length;
+        const isTie=sameCount>1;
         const rl=isTie?mRank+'위 공동':mRank+'위';
         const medal=mRank===1?'🥇':mRank===2?'🥈':mRank===3?'🥉':'';
         html+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid rgba(255,255,255,.04);">
