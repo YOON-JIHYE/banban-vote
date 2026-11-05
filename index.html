@@ -353,65 +353,69 @@ const GAS_URL       = 'https://script.google.com/macros/s/AKfycbyUG_Q8V9OdfMN28G
 const ADMIN_PW      = 'banban2026';                 // ← 변경
 const IS_SPECIAL_WEEK = false;
 const ROUND_BASE_DATE = '2026-06-29'; // 7월 1주차 = 1라운드 기준
-
-function calcRoundNum(wk) {
-  const base = new Date(ROUND_BASE_DATE);
-  const curr = new Date(wk);
-  const diff = Math.round((curr - base) / (1000*60*60*24));
-  return Math.floor(diff/7) + 1;
+function calcRoundNum(wk){
+  const base=new Date(ROUND_BASE_DATE), curr=new Date(wk);
+  return Math.floor(Math.round((curr-base)/(1000*60*60*24))/7)+1;
 }
 
 /* ══════════════════════════════════════
    MEMBERS
 ══════════════════════════════════════ */
 const MEMBERS = [
-  // 본부 (소속팀 없음 → 아무나 2명)
-  { id:'yoon',   name:'윤지혜',   nick:'윤교주',   team:'본부', role:'본부장', freeVote:true,
+  // ── 본부장 (아무나 2명)
+  { id:'yoon',    name:'윤지혜',  nick:'윤교주',    team:'본부',  group:'',   role:'본부장', freeVote:true,  groupLead:false,
     mission:'조직의 세계관을 지배하고 전도와 전투(영업)력 강화', av:'av-b' },
-  // 1국 (소속팀 없음 → 아무나 2명)
-  { id:'jang',   name:'장미령',   nick:'장침',     team:'1국',  role:'국장',   freeVote:true,
+
+  // ── 1국 국장 (아무나 2명, freeVote:true)
+  { id:'jang',    name:'장미령',  nick:'장침',      team:'1국',  group:'',   role:'국장', freeVote:true,  groupLead:false,
     mission:'침처럼 뾰족하게 시장 인사이트를 파악하고, 조직원들 업무 역량 강화 집중', av:'av-t' },
-  // 1팀
-  { id:'kim_b',  name:'김범수',   nick:'닥터범',   team:'1팀',  role:'팀장',   freeVote:false,
+
+  // ── 1그룹 그룹장 (1그룹 팀원 1명 + 타그룹 1명)
+  { id:'kim_b',   name:'김범수',  nick:'닥터범',    team:'1그룹 송팀', group:'1그룹', role:'그룹장', freeVote:false, groupLead:true,
     mission:'업무와 전략 도출에 필요한 AI 기능 연구 및 전파, 조직 업무 효율화 집중', av:'av-r' },
-  { id:'song_j', name:'송주영',   nick:'육각이형', team:'1팀',  role:'셀장',   freeVote:false,
+
+  // ── 1그룹 송팀
+  { id:'song_j',  name:'송주영',  nick:'육각이형',  team:'1그룹 송팀', group:'1그룹', role:'셀장', freeVote:false, groupLead:false,
     mission:'팀의 맏 선임으로서 리더와 조직원들을 연결하는 만능 재주꾼이자 허브', av:'av-b' },
-  { id:'lim_s',  name:'임수빈',   nick:'빈선배',   team:'1팀',  role:'셀장',   freeVote:false,
+  { id:'seo_j',   name:'서정욱',  nick:'황비홍',    team:'1그룹 송팀', group:'1그룹', role:'선임', freeVote:false, groupLead:false,
+    mission:'무림고수같은 연륜으로 쌓은 내공으로 악당(업무)들을 물리치는 역할', av:'av-t' },
+  { id:'lee_h',   name:'이호준',  nick:'키비쥬얼',  team:'1그룹 송팀', group:'1그룹', role:'선임', freeVote:false, groupLead:false,
+    mission:'훌륭한 신체만큼 훌륭한 마케팅 아웃풋을 비쥬얼로 보여주는 역할', av:'av-p' },
+  { id:'kang_a',  name:'강지은A', nick:'다람쥐은',  team:'1그룹 송팀', group:'1그룹', role:'사원', freeVote:false, groupLead:false,
+    mission:'재빠르게 업무를 수행하고 다음 열매(신규 영업)를 모니터링', av:'av-g' },
+  { id:'kang_b',  name:'강지은B', nick:'비비총',    team:'1그룹 송팀', group:'1그룹', role:'사원', freeVote:false, groupLead:false,
+    mission:'빠르고 정확하게 업무를 겨냥하여 처리', av:'av-b' },
+
+  // ── 1그룹 임팀
+  { id:'lim_s',   name:'임수빈',  nick:'빈선배',    team:'1그룹 임팀', group:'1그룹', role:'팀장', freeVote:false, groupLead:false,
     mission:'장기근속자로서 회사 내 협력 업무 주도 및 이슈 내부 전파', av:'av-t' },
-  { id:'kim_h',  name:'김혜지',   nick:'쾌지',     team:'1팀',  role:'선임',   freeVote:false,
-    mission:'명쾌한 판단력으로 고객사 및 외부 마케팅 전략 모니터링', av:'av-p' },
-  { id:'jeong',  name:'정송윤',   nick:'물의정령', team:'1팀',  role:'주임',   freeVote:false,
+  { id:'jeong',   name:'정송윤',  nick:'물의정령',  team:'1그룹 임팀', group:'1그룹', role:'주임', freeVote:false, groupLead:false,
     mission:'조용하지만 재빠르게 필요한 데이터와 인사이트 추출 및 구조화', av:'av-g' },
-  { id:'kim_j',  name:'김주은',   nick:'공주은',   team:'1팀',  role:'사원',   freeVote:false,
+  { id:'kim_j',   name:'김주은',  nick:'공주은',    team:'1그룹 임팀', group:'1그룹', role:'사원', freeVote:false, groupLead:false,
     mission:'여리지만 강하게 주어진 업무를 해내고 팀 내 데이터 체계화에 집중', av:'av-b' },
-  { id:'kang_a', name:'강지은A',  nick:'다람쥐은', team:'1팀',  role:'사원',   freeVote:false,
-    mission:'재빠르게 업무를 수행하고 다음 열매(신규 영업)를 모니터링', av:'av-t' },
-  { id:'kang_b', name:'강지은B',  nick:'비비총',   team:'1팀',  role:'사원',   freeVote:false,
-    mission:'빠르고 정확하게 업무를 겨냥하여 처리하는 역할', av:'av-p' },
-  // 2팀
-  { id:'lee',    name:'이상미',   nick:'티쳐리',   team:'2팀',  role:'팀장',   freeVote:false,
-    mission:'조직원들에게 맞춤형 눈높이 선생님 역할을 하며 원활한 업무 수행이 가능하도록 육성', av:'av-r' },
-  { id:'seo',    name:'서무구',   nick:'구구박사', team:'2팀',  role:'선임',   freeVote:false,
-    mission:'어떤 일이던 척척 해내며 척척박사의 면모를 조직원들에게 전파', av:'av-b' },
-  { id:'sim',    name:'심규영',   nick:'뀨도사',   team:'2팀',  role:'주임',   freeVote:false,
-    mission:'내공 있는 깊은 분석력으로 전략을 설계하고 실행 결과 전파', av:'av-t' },
-  { id:'kim_ig', name:'김인구',   nick:'꿀성대',   team:'2팀',  role:'사원',   freeVote:false,
-    mission:'꿀 바른듯한 보이스와 워딩으로 소통하며 업무를 처리하는 역할', av:'av-g' },
-  // 3팀
-  { id:'noh_e',  name:'노을아래', nick:'노을센세', team:'3팀',  role:'팀장',   freeVote:false,
+
+  // ── 2그룹 그룹장 (2그룹 팀원 1명 + 타그룹 1명)
+  { id:'noh_e',   name:'노을아래',nick:'노을센세',  team:'2그룹 조팀', group:'2그룹', role:'그룹장', freeVote:false, groupLead:true,
     mission:'차가운 카리스마로 조직원들의 대내외적 올곧은 에티튜드의 가이드 역할', av:'av-r' },
-  { id:'cho',    name:'조유나',   nick:'나나조',   team:'3팀',  role:'셀장',   freeVote:false,
+
+  // ── 2그룹 조팀
+  { id:'cho',     name:'조유나',  nick:'나나조',    team:'2그룹 조팀', group:'2그룹', role:'셀장', freeVote:false, groupLead:false,
     mission:'부서장들 다음으로 본부의 맏 언니로서 연륜과 지식을 나누어주고 전파', av:'av-b' },
-  { id:'min',    name:'민형준',   nick:'훈민',     team:'3팀',  role:'선임',   freeVote:false,
+  { id:'min',     name:'민형준',  nick:'훈민',      team:'2그룹 조팀', group:'2그룹', role:'선임', freeVote:false, groupLead:false,
     mission:'신문물과 새로운 실무 스킬을 훈훈하게 전달하고 전파', av:'av-p' },
-  { id:'park',   name:'박소윤',   nick:'엔젤핑',   team:'3팀',  role:'주임',   freeVote:false,
-    mission:'빠르고 정확한 실무 역량 스킬을 전파하고 시너지를 만들어내는 역할', av:'av-g' },
-  { id:'yoon_s', name:'윤소혜',   nick:'백병아리', team:'3팀',  role:'주임',   freeVote:false,
-    mission:'귀여운 겉모습 속에 강단 있고 뚝심있는 실무 스킬을 아이템의 밑거름으로 전환', av:'av-b' },
-  { id:'jang_s', name:'장성우',   nick:'얼리버드', team:'3팀',  role:'사원',   freeVote:false,
-    mission:'일찍 일어난 새처럼 빠르게 업무를 시작하며 실무를 습득해 적용하는 역할', av:'av-r' },
+  { id:'yoon_s',  name:'윤소혜',  nick:'백병아리',  team:'2그룹 조팀', group:'2그룹', role:'주임', freeVote:false, groupLead:false,
+    mission:'귀여운 겉모습 속에 강단 있고 뚝심있는 실무 스킬을 아이템의 밑거름으로 전환', av:'av-g' },
+  { id:'kim_ig',  name:'김인구',  nick:'꿀성대',    team:'2그룹 조팀', group:'2그룹', role:'사원', freeVote:false, groupLead:false,
+    mission:'꿀 바른듯한 보이스와 워딩으로 소통하며 업무 처리', av:'av-t' },
+  { id:'jang_s',  name:'장성우',  nick:'얼리버드',  team:'2그룹 조팀', group:'2그룹', role:'사원', freeVote:false, groupLead:false,
+    mission:'일찍 일어난 새처럼 빠르게 업무 시작하며 실무 습득', av:'av-b' },
+  { id:'kim_ms',  name:'김명수',  nick:'까스활명수', team:'2그룹 조팀', group:'2그룹', role:'사원', freeVote:false, groupLead:false,
+    mission:'조직 내 쾌활한 활력소이자 막힌 업무들을 시원하게 소화시켜주는 역할', av:'av-p' },
+  { id:'song_c',  name:'송창헌',  nick:'미어캣',    team:'2그룹 조팀', group:'2그룹', role:'사원', freeVote:false, groupLead:false,
+    mission:'똘망하게 업무를 관찰하고 정확하게 수행해내는 역할', av:'av-g' },
 ];
-const TEAMS = ['본부','1국','1팀','2팀','3팀'];
+// 팀 목록 (UI 표시 순서)
+const TEAMS = ['본부','1국','1그룹 송팀','1그룹 임팀','2그룹 조팀'];
 
 /* ══════════════════════════════════════
    WEEK / MONTH LOGIC
@@ -476,13 +480,11 @@ window.onload = () => {
 
 function renderWeekBanner(){
   const info = weekLabel(CURR_WEEK);
-  
-  document.getElementById('wbRange').textContent = info.range;
-  const badge = document.getElementById('wbBadge');
   const roundNum = calcRoundNum(CURR_WEEK);
   document.getElementById('wbWeek').textContent = roundNum+'라운드 · '+info.label;
-  badge.textContent = TODAY.getMonth()+1+'월';
-  badge.className='wb-badge';
+  document.getElementById('wbRange').textContent = info.range;
+  const badge = document.getElementById('wbBadge');
+  badge.textContent=`${TODAY.getMonth()+1}월`; badge.className='wb-badge';
 }
 
 /* ══════════════════════════════════════
@@ -542,7 +544,7 @@ function setRound(r){
 }
 
 function renderRoundBtns(){
-  if(!IS_SPECIAL_WEEK) return;
+  return; // 2회 투표 주간 종료
   [1,2].forEach(r=>{
     const btn=document.getElementById('rbtn-r'+r);
     const wk=r===1?PREV_WEEK:CURR_WEEK;
@@ -557,7 +559,7 @@ function renderRoundBtns(){
 function renderVote(){
   const me = getMe();
   const wk = activeWeekKey();
-  const round = calcRoundNum(activeWeekKey());
+  const round = calcRoundNum(wk);
   const voted = me && isVoted(cat, wk, round);
   const catLabel = cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
   const catDesc  = cat==='great'?'임무를 잘 수행한 동료':'스몰토크와 소통을 많이 한 동료';
@@ -565,6 +567,8 @@ function renderVote(){
   let ruleHtml = `<strong>${catLabel}</strong> — ${catDesc}를 선택해 주세요<br>`;
   if(me && me.freeVote){
     ruleHtml += `규칙: <strong>누구든 2명</strong> 선택 가능 (본인 제외)`;
+  } else if(me && me.groupLead){
+    ruleHtml += `규칙: <strong>내 그룹 팀원 1명</strong> + <strong>다른 그룹 팀원 1명</strong> (본인 제외)`;
   } else {
     ruleHtml += `규칙: <strong>소속 팀 1명</strong> + <strong>다른 팀 1명</strong> (본인 제외)`;
   }
@@ -578,7 +582,6 @@ function renderVote(){
   // round sel
   const rswrap = document.getElementById('roundSelWrap');
   rswrap.style.display = 'none';
-  
 
   // teams area
   const ta = document.getElementById('teamsArea');
@@ -593,9 +596,11 @@ function renderMemberGrid(){
   const me = getMe();
   if(!me) return;
   const wk = activeWeekKey();
-  const round = calcRoundNum(activeWeekKey());
+  const round = calcRoundNum(wk);
   const voted = isVoted(cat, wk, round);
   const isFree = me.freeVote;
+  const isGroupLead = me.groupLead;
+  const myGroup = me.group;
 
   const groups = {};
   MEMBERS.forEach(m=>{ if(!groups[m.team]) groups[m.team]=[]; groups[m.team].push(m); });
@@ -607,11 +612,11 @@ function renderMemberGrid(){
     if(!groups[t]) return;
     const card = document.createElement('div');
     card.className='tcard';
-    card.innerHTML=`<div class="thead">마케팅본부 ${t}</div>`;
+    card.innerHTML=`<div class="thead">${t}</div>`;
 
     groups[t].forEach(m=>{
       const isMe = m.id === myId;
-      const inMyTeam = m.team === me.team;
+      const inMyTeam = me.groupLead ? (m.group === me.group && m.id !== me.id) : (m.team === me.team);
       const isSelf = m.id===selS;
       const isOther = m.id===selO;
       const isF1 = m.id===selF1;
@@ -648,12 +653,17 @@ function renderMemberGrid(){
       if(!voted && !isMe){
         row.onclick = ()=>{
           if(isFree){
-            // 자유 2명 선택
+            // 자유 2명 선택 (본부장)
             if(m.id===selF1){ selF1=null; }
             else if(m.id===selF2){ selF2=null; }
             else if(!selF1){ selF1=m.id; }
             else if(!selF2){ selF2=m.id; }
             else { selF1=selF2; selF2=m.id; }
+          } else if(isGroupLead){
+            // 그룹장: 내 그룹 1명 + 타그룹 1명
+            const inMyGroup = m.group === myGroup;
+            if(inMyGroup){ selS = selS===m.id?null:m.id; }
+            else { selO = selO===m.id?null:m.id; }
           } else {
             if(inMyTeam){ selS = selS===m.id?null:m.id; }
             else { selO = selO===m.id?null:m.id; }
@@ -679,16 +689,19 @@ function renderPicks(){
       (m1?`<span class="ppill pp-f">👤 ${m1.name} (${m1.nick})</span>`:`<span class="ppill pp-e">1번째 선택 필요</span>`)+
       (m2?`<span class="ppill pp-f">👤 ${m2.name} (${m2.nick})</span>`:`<span class="ppill pp-e">2번째 선택 필요</span>`);
   } else {
+    const me2=getMe();
     const sm=MEMBERS.find(m=>m.id===selS), om=MEMBERS.find(m=>m.id===selO);
+    const sLabel = me2&&me2.groupLead ? '내 그룹' : '소속 팀';
+    const oLabel = me2&&me2.groupLead ? '타 그룹' : '다른 팀';
     document.getElementById('picksRow').innerHTML=
-      (sm?`<span class="ppill pp-s">👤 ${sm.name} (${sm.nick}) · 소속팀</span>`:`<span class="ppill pp-e">소속 팀 1명 선택 필요</span>`)+
-      (om?`<span class="ppill pp-o">👤 ${om.name} (${om.nick}) · 타팀</span>`:`<span class="ppill pp-e">다른 팀 1명 선택 필요</span>`);
+      (sm?`<span class="ppill pp-s">👤 ${sm.name} (${sm.nick}) · ${sLabel}</span>`:`<span class="ppill pp-e">${sLabel} 1명 선택 필요</span>`)+
+      (om?`<span class="ppill pp-o">👤 ${om.name} (${om.nick}) · ${oLabel}</span>`:`<span class="ppill pp-e">${oLabel} 1명 선택 필요</span>`);
   }
 }
 
 function updateSbtn(){
   const me=getMe(); if(!me) return;
-  const wk=activeWeekKey(), round=calcRoundNum(activeWeekKey());
+  const wk=activeWeekKey(), round=calcRoundNum(wk);
   const voted=isVoted(cat,wk,round);
   const canVote = me.freeVote ? (selF1&&selF2) : (selS&&selO);
   const btn=document.getElementById('sbtn');
@@ -701,7 +714,7 @@ function updateSbtn(){
 ══════════════════════════════════════ */
 async function submitVote(){
   const me=getMe(); if(!me) return;
-  const wk=activeWeekKey(), round=calcRoundNum(activeWeekKey());
+  const wk=activeWeekKey(), round=calcRoundNum(wk);
   const picks = me.freeVote ? [selF1,selF2] : [selS,selO];
   if(!picks[0]||!picks[1]) return;
 
@@ -710,7 +723,7 @@ async function submitVote(){
 
   const payload={
     action:'vote', weekKey:wk, monthKey:monthOfFri(wk),
-    category:cat, voterId:myId, voterName:me.name,
+    category:cat, voterId:myId, voterName:me.name, voterNick:me.nick,
     voterTeam:me.team, round, picks
   };
 
@@ -751,7 +764,6 @@ function renderResults(){
     el.innerHTML=`<div class="locked-box"><div class="locked-icon">🔒</div><div class="locked-title">관리자 전용</div><div class="locked-desc">투표 결과는 마스터 윤교주만 확인할 수 있어요.</div><button class="login-btn" onclick="openAdminModal()">관리자 로그인</button></div>`;
     return;
   }
-
   const allWeeks = cache.weeks || {};
   const currWd = allWeeks[CURR_WEEK] || {};
   const currRound = calcRoundNum(CURR_WEEK);
@@ -762,11 +774,11 @@ function renderResults(){
   const notVoted = MEMBERS.filter(m=>!votedSet.has(m.id));
   if(notVoted.length>0){
     html+=`<div class="not-voted-box">
-      <div class="nv-title">⚠️ ${currRound}라운드 미투표 (${notVoted.length}명) 🔥</div>
+      <div class="nv-title">⚠️ ${currRound}라운드 미투표 (${notVoted.length}명) — 들들 볶을 예정 🔥</div>
       <div class="nv-pills">${notVoted.map(m=>`<span class="nv-pill">${m.name} (${m.nick})</span>`).join('')}</div>
     </div>`;
   } else if(Object.keys(currWd).length>0){
-    html+=`<div style="background:var(--green-bg);border:1px solid rgba(34,197,94,.3);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--green)">✅ ${currRound}라운드 전원 투표 완료!</div>`;
+    html+=`<div style="background:var(--green-bg);border:1px solid rgba(34,197,94,.3);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--green)">✅ ${currRound}라운드 전원 투표 완료! 반반한 설계자들 멋져요!</div>`;
   }
 
   // 전체 라운드 히스토리
@@ -775,18 +787,17 @@ function renderResults(){
     html+=`<div class="empty"><span class="ei">📊</span>아직 투표 결과가 없습니다</div>`;
     el.innerHTML=html; return;
   }
-
   html+=`<div class="sdiv">📅 전체 라운드 히스토리</div>`;
 
   sortedWeeks.forEach(wk=>{
-    const wd = allWeeks[wk]||{};
-    const catd = wd[cat]||{};
-    const detail = wd[cat+'_detail']||{};
-    const roundNum = calcRoundNum(wk);
-    const wl = weekLabel(wk);
-    const wkSorted = Object.entries(catd).sort((a,b)=>b[1]-a[1]);
-    const isCurr = wk===CURR_WEEK;
-    const uid = 'rnd_'+wk.replace(/-/g,'');
+    const wd=allWeeks[wk]||{};
+    const catd=wd[cat]||{};
+    const detail=wd[cat+'_detail']||{};
+    const roundNum=calcRoundNum(wk);
+    const wl=weekLabel(wk);
+    const wkSorted=Object.entries(catd).sort((a,b)=>b[1]-a[1]);
+    const isCurr=wk===CURR_WEEK;
+    const uid='rnd_'+wk.replace(/-/g,'');
 
     html+=`<div style="background:var(--navy-mid);border:1px solid ${isCurr?'rgba(200,150,12,.5)':'rgba(255,255,255,.08)'};border-radius:var(--r-md);margin-bottom:10px;overflow:hidden;">
       <div onclick="toggleHist('${uid}')" style="padding:10px 14px;background:${isCurr?'rgba(200,150,12,.12)':'rgba(255,255,255,.03)'};display:flex;justify-content:space-between;align-items:center;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06);">
@@ -815,7 +826,6 @@ function renderResults(){
           <span style="font-size:12px;font-weight:700;color:var(--gold-lt)">${cnt}표</span>
         </div>`;
       });
-
       const detEntries=Object.entries(detail).sort((a,b)=>b[1].count-a[1].count);
       if(detEntries.length){
         html+=`<div style="padding:7px 14px 3px;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;border-top:1px solid rgba(200,150,12,.2);">투표 상세 내역</div>`;
@@ -823,7 +833,7 @@ function renderResults(){
           const m=MEMBERS.find(x=>x.id===id); if(!m) return;
           html+=`<div style="padding:5px 14px 8px;">
             <div style="font-size:12px;font-weight:600;color:var(--white);margin-bottom:3px">${m.name} (${m.nick}) · ${info.count}표</div>
-            ${(info.voters||[]).map(v=>`<div style="font-size:11px;color:var(--g300);padding-left:8px">• ${v.name}${v.nick?' ('+v.nick+')':''} · ${v.team}팀</div>`).join('')}
+            ${(info.voters||[]).map(v=>`<div style="font-size:11px;color:var(--g300);padding-left:8px">• ${v.name}${v.nick?' ('+v.nick+')':''} · ${v.team}</div>`).join('')}
           </div>`;
         });
       }
@@ -832,53 +842,44 @@ function renderResults(){
     }
     html+=`</div></div>`;
   });
-
   el.innerHTML=html;
 }
 
 
-/* ══════════════════════════════════════
-   RENDER MONTHLY (admin only)
-══════════════════════════════════════ */
 function renderMonthly(){
   const el=document.getElementById('monthlyContent');
   if(!isAdmin){
     el.innerHTML=`<div class="locked-box"><div class="locked-icon">🔒</div><div class="locked-title">관리자 전용</div><div class="locked-desc">월간 집계는 마스터 윤교주만 확인할 수 있어요.</div><button class="login-btn" onclick="openAdminModal()">관리자 로그인</button></div>`;
     return;
   }
-  const catLabel = cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
   // weeks 데이터에서 월별 합산
-  const allMonths = {};
+  const allMonths={};
   Object.entries(cache.weeks||{}).forEach(([wk,wd])=>{
-    const mo = wk.slice(0,7);
+    const mo=wk.slice(0,7);
     if(!allMonths[mo]) allMonths[mo]={};
-    const catd = wd[cat]||{};
-    Object.entries(catd).forEach(([id,cnt])=>{
-      if(!allMonths[mo][cat]) allMonths[mo][cat]={};
-      allMonths[mo][cat][id]=(allMonths[mo][cat][id]||0)+cnt;
+    ['great','chok'].forEach(c=>{
+      const catd=wd[c]||{};
+      if(!allMonths[mo][c]) allMonths[mo][c]={};
+      Object.entries(catd).forEach(([id,cnt])=>{ allMonths[mo][c][id]=(allMonths[mo][c][id]||0)+cnt; });
     });
   });
-  const monthKeys = Object.keys(allMonths).sort().reverse();
-  if(!monthKeys.length){
-    el.innerHTML=`<div class="empty"><span class="ei">📅</span>월간 데이터가 없습니다</div>`;
-    return;
-  }
+  const monthKeys=Object.keys(allMonths).sort().reverse();
+  if(!monthKeys.length){ el.innerHTML=`<div class="empty"><span class="ei">📅</span>월간 데이터가 없습니다</div>`; return; }
   let html='';
   monthKeys.forEach(mo=>{
     const monthData=(allMonths[mo]||{})[cat]||{};
     const sorted=Object.entries(monthData).sort((a,b)=>b[1]-a[1]);
-    const isCurr = mo===CURR_MONTH;
+    const isCurr=mo===CURR_MONTH;
     const moLabel=mo.replace('-','년 ')+'월';
     const uid='month_'+mo.replace('-','');
     if(sorted.length>0){
       const winner=MEMBERS.find(m=>m.id===sorted[0][0]);
-      if(winner){
-        html+=`<div class="mwinner" style="${isCurr?'':'border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.03)'}">
-          <div class="mwl" style="${isCurr?'':'color:var(--g300)'}">${isCurr?'🔴 진행 중 · ':'🏆 '} ${moLabel} ${catLabel} ${isCurr?'현재 선두':'최종 1위'}</div>
-          <div class="mwn" style="${isCurr?'':'color:var(--g200)'}">${winner.name} (${winner.nick})</div>
-          <div class="mws">누적 ${sorted[0][1]}표${isCurr?' · 진행 중':' · 최종 결산'}</div>
-        </div>`;
-      }
+      const catLabel=cat==='great'?'댓츠그뤠잇':'이달의왕촉새';
+      if(winner) html+=`<div class="mwinner" style="${isCurr?'':'border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.03)'}">
+        <div class="mwl" style="${isCurr?'':'color:var(--g300)'}">${isCurr?'🔴 진행 중 · ':'🏆 '}${moLabel} ${catLabel} ${isCurr?'현재 선두':'최종 1위'}</div>
+        <div class="mwn" style="${isCurr?'':'color:var(--g200)'}">${winner.name} (${winner.nick})</div>
+        <div class="mws">누적 ${sorted[0][1]}표${isCurr?' · 진행 중':' · 최종 결산'}</div>
+      </div>`;
     }
     html+=`<div style="background:var(--navy-mid);border:1px solid ${isCurr?'rgba(200,150,12,.4)':'rgba(255,255,255,.1)'};border-radius:var(--r-lg);margin-bottom:12px;overflow:hidden;">
       <div onclick="toggleHist('${uid}')" style="padding:11px 16px;background:${isCurr?'rgba(200,150,12,.1)':'rgba(255,255,255,.03)'};display:flex;justify-content:space-between;align-items:center;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);">
@@ -946,8 +947,7 @@ function gasCall(payload){
 }
 
 function toggleHist(uid){
-  const e2=document.getElementById(uid);
-  const ar=document.getElementById(uid+'_arrow');
+  const e2=document.getElementById(uid), ar=document.getElementById(uid+'_arrow');
   if(!e2) return;
   const open=e2.style.display!=='none';
   e2.style.display=open?'none':'block';
